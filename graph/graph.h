@@ -18,4 +18,7 @@ typedef struct {
     Graph *graph[VERTEX];
 } Graph_;
 
+Graph_  *gh_creat(void);
+_Graph  *gh_search(Graph_ *G, char *s);
+
 #endif  /* _GRAPH_H */

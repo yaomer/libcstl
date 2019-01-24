@@ -6,85 +6,18 @@
 #include "../common.h"
 #include "hash.h"
 #include "queue.h"
+#include "stack.h"
 #include "graph.h"
-/*
- * A B C
- * B A C D
- * C A B D E
- * D B C E F
- * E C D
- * F D
- */
-
-Graph_ *
-gh_init(void)
-{
-    Graph_ *G;
-    int i;
-
-    malloc_node(G, Graph_);
-    for (i = 0; i < VERTEX; i++) {
-        malloc_node(G->graph[i], Graph);
-        bzero(G->graph[i], sizeof(Graph));
-    }
-
-    return G;
-}
-
-_Graph *
-gh_search(Graph_ *G, char *s)
-{
-    int i;
-
-    for (i = 0; i < VERTEX; i++)
-        if (strcmp(s, G->graph[i]->head->s) == 0)
-            return G->graph[i]->head;
-    return NULL;
-}
 
 void
-gh_insert(Graph *H, char *s)
+back_path(Hash *hp, char *s)
 {
-    _Graph *G;
+    _Hash *p;
 
-    malloc_node(G, _Graph);
-    malloc_str(G->s, s);
-    if (H->tail)
-        H->tail->next = G;
-    G->next = NULL;
-    H->tail = G;
-
-    if (!H->first) {
-        H->head = H->tail;
-        H->first = 1;
+    if ((p = ht_search(hp, s))) {
+        back_path(hp, p->pres);
+        printf("%s ", s);
     }
-}
-
-Graph_ *
-gh_creat(void)
-{
-    char line[BUFSIZ];
-    char s[BUFSIZ];
-    int i, j, k;
-    Graph_ *G;
-
-    G = gh_init();
-    for (i = 0; i < VERTEX; i++) {
-        fgets(line, sizeof(line), stdin);
-        j = 0;
-        while (line[j] && line[j] != '\n') {
-            if (isspace(line[j])) {
-                j++;
-                continue;
-            }
-            k = 0;
-            while (k < BUFSIZ && !isspace(line[j]))
-                s[k++] = line[j++];
-            s[k] = '\0';
-            gh_insert(G->graph[i], s);
-        }
-    }
-    return G;
 }
 
 void
@@ -103,23 +36,57 @@ bfs(Graph_ *G, char *s, char *t)
         while (tg) {
             if (!ht_search(visited, tg->s)) {
                 queue_push(queue, tg->s);
-                /* ht_insert(visited, tg->s); */
                 ht_insert(visited, tg->s, NULL);
                 ht_insert(parent, tg->s, tq->s);
             }
             tg = tg->next;
         }
-        /* printf("%s ", tq->s); */
+        printf("%s ", tq->s);
         queue_pop(queue);
     }
+    printf("\n");
 
-    _Hash *tmp;
+    /* _Hash *tmp;
     while ((tmp = ht_search(parent, t))) {
         printf("%s ", t);
         t = tmp->pres;
-    }
+    } */
+    back_path(parent, t);
     printf("\n");
     queue_clear(&queue);
+    ht_destroy(&visited);
+    ht_destroy(&parent);
+}
+
+void
+dfs(Graph_ *G, char *s, char *t)
+{
+    Hash *visited = ht_init();
+    Hash *parent = ht_init();
+    Stack *stack = NULL;
+
+    stack_push(&stack, s);
+    ht_insert(visited, s, NULL);
+    ht_insert(parent, s, NULL);
+    while (!is_stack_empty(stack)) {
+        Stack *ts = stack_pop(&stack);
+        _Graph *tg = gh_search(G, ts->s);
+        while (tg) {
+            if (!ht_search(visited, tg->s)) {
+                stack_push(&stack, tg->s);
+                ht_insert(visited, tg->s, NULL);
+                ht_insert(parent, tg->s, ts->s);
+            }
+            tg = tg->next;
+        }
+        printf("%s ", ts->s);
+        stack_free(ts);
+    }
+    printf("\n");
+
+    back_path(parent, t);
+    printf("\n");
+    stack_clear(&stack);
     ht_destroy(&visited);
     ht_destroy(&parent);
 }
@@ -129,5 +96,6 @@ main(void)
 {
     Graph_ *G = gh_creat();
 
-    bfs(G, "A", "E");
+    bfs(G, "A", "F");
+    dfs(G, "A", "F");
 }
