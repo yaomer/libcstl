@@ -8,4 +8,6 @@ main(void)
 
     bfs(G, "A", "F");
     dfs(G, "A", "F");
+
+    gh_destroy(&G);
 }

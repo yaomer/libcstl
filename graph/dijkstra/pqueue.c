@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../common.h"
+#include "../../common.h"
 #include "pqueue.h"
 
 Pqueue *

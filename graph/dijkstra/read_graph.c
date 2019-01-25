@@ -17,6 +17,29 @@ gh_init(void)
     return G;
 }
 
+void
+gh_destroy(Graph **G)
+{
+    Graph_ *p, *pt;
+    _Graph *q, *qt;
+
+    assert(G && *G);
+    for (p = (*G)->top; p; p = pt) {
+        pt = p->down;
+        q = p->head;
+        while (q) {
+            qt = q->next;
+            free(q->gs->s);
+            free(q->gs);
+            free(q);
+            q = qt;
+        }
+        free(p);
+    }
+    free(*G);
+    *G = NULL;
+}
+
 _Graph *
 gh_search(Graph *G, char *s)
 {
@@ -90,7 +113,6 @@ gh_creat(void)
             malloc_str(ns->s, s);
             gh_insert(p, ns);
         }
-
     }
     return G;
 }

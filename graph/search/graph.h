@@ -19,8 +19,9 @@ typedef struct {
     int first;
 } Graph;
 
-Graph  *gh_creat(void);
-_Graph *gh_search(Graph *G, char *s);
+Graph   *gh_creat(void);
+void    gh_destroy(Graph **); 
+_Graph  *gh_search(Graph *G, char *s);
 
 void    bfs(Graph *G, char *s, char *t);
 void    dfs(Graph *G, char *s, char *t);
