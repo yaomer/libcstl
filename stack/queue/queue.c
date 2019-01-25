@@ -42,7 +42,11 @@ queue_pop(Queue *Q)
         while (!isempty(Q->push))
             push(Q->pop, pop(Q->push));
     }
-    return pop(Q->pop);
+
+    if (!isempty(Q->pop))
+        return pop(Q->pop);
+    else
+        error("queue is isempty");
 }
 
 void
