@@ -1,0 +1,28 @@
+#ifndef _GRAPH_H
+#define _GRAPH_H
+
+typedef struct _graph {
+    char *s;
+    struct _graph *next;
+} _Graph;
+
+typedef struct graph_ {
+    _Graph *head;
+    _Graph *tail;
+    struct graph_ *down;
+    int first;
+} Graph_;
+
+typedef struct {
+    Graph_ *top;
+    Graph_ *bottom;
+    int first;
+} Graph;
+
+Graph  *gh_creat(void);
+_Graph *gh_search(Graph *G, char *s);
+
+void    bfs(Graph *G, char *s, char *t);
+void    dfs(Graph *G, char *s, char *t);
+
+#endif  /* _GRAPH_H */
