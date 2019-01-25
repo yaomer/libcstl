@@ -11,6 +11,8 @@ typedef struct {
 Queue   *queue_init(void);
 void    queue_push(Queue *, int);
 int     queue_pop(Queue *);
+int     is_queue_full(Queue *);
+int     is_queue_empty(Queue *);
 void    queue_clear(Queue **);
 
 #endif  /* _QUEUE_H */

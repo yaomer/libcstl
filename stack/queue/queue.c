@@ -29,6 +29,7 @@ queue_init(void)
 void
 queue_push(Queue *Q, int val)
 {
+    assert(Q);
     if (!isfull(Q->push))
         push(Q->push, val);
     else
@@ -38,6 +39,7 @@ queue_push(Queue *Q, int val)
 int
 queue_pop(Queue *Q)
 {
+    assert(Q);
     if (isempty(Q->pop)) {
         while (!isempty(Q->push))
             push(Q->pop, pop(Q->push));
@@ -49,10 +51,31 @@ queue_pop(Queue *Q)
         error("queue is isempty");
 }
 
+/*
+ * 只要Q->push满了，队列Q就满了，不论Q->pop是否满了
+ * 因为queue_push只针对Q->push
+ */
+int
+is_queue_full(Queue *Q)
+{
+    assert(Q);
+    return isfull(Q->push);
+}
+
+/*
+ * 只要Q->push和Q->pop中有一个不为空，队列Q就不为空
+ */
+int
+is_queue_empty(Queue *Q)
+{
+    assert(Q);
+    return isempty(Q->push) && isempty(Q->pop);
+}
+
 void
 queue_clear(Queue **Q)
 {
-    assert(Q);
+    assert(Q && *Q);
     clear(&(*Q)->push);
     clear(&(*Q)->pop);
     free(*Q);
