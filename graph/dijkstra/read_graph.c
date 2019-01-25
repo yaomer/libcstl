@@ -6,15 +6,6 @@
 #include "../../common.h"
 #include "graph.h"
 
-/* 读入一个这样描述的图
- * A B C
- * B A C D
- * C A B D E
- * D B C E F
- * E C D
- * F D
- */
-
 Graph *
 gh_init(void)
 {
