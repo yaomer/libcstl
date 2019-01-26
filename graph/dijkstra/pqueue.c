@@ -12,6 +12,7 @@ pq_init(void)
 
     malloc_node(p, Pqueue);
     bzero(p, sizeof(*p));
+
     return p;
 }
 
@@ -21,8 +22,8 @@ pq_destroy(Pqueue **p)
     int i;
 
     assert(p);
-    for (i = 1; i < MAXVAL + 1; i++)
-        free((*p)->ps[i])
+    for (i = 1; i < MAXVAL; i++)
+        free((*p)->ps[i]);
     free(*p);
     *p = NULL;
 }
@@ -35,13 +36,17 @@ min_heap(Pqueue *p, int i)
     l = left(i);
     r = right(i);
 
-    assert(p);
+    if (l > p->pqsize)
+        return;
     if (p->ps[l]->prior < p->ps[i]->prior)
         smallest = l;
     else
         smallest = i;
-    if (p->ps[r]->prior > p->ps[largest]->prior)
+    if (r > p->pqsize)
+        goto next;
+    if (p->ps[r]->prior < p->ps[smallest]->prior)
         smallest = r;
+next:
     if (smallest != i) {
         swap(p->ps[i], p->ps[smallest]);
         min_heap(p, smallest);
@@ -54,7 +59,7 @@ pq_push(Pqueue *p, Node *s)
     int i, j;
 
     assert(p);
-    if ((i = ++p->pqsize) > MAXVAL)
+    if ((i = ++p->pqsize) >= MAXVAL)
         error("heap overflow");
 
     p->ps[i] = s;
@@ -66,19 +71,18 @@ pq_push(Pqueue *p, Node *s)
     }
 }
 
-int
+Node *
 pq_pop(Pqueue *p)
 {
     Node *s;
 
     assert(p);
     if (p->pqsize < 1)
-        error("heap underflow")
+        error("heap underflow");
 
     s = p->ps[1];
-    free(p->ps[p->pqsize]);
-    p->ps[p->pqsize] = NULL;
-    p->ps[1] = p->ps[--p->pqsize];
+    p->ps[1] = p->ps[p->pqsize];
+    p->ps[p->pqsize--] = s;
     min_heap(p, 1);
     return s;
 }

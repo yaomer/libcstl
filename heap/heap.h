@@ -1,11 +1,11 @@
 #ifndef _HEAP_H
 #define _HEAP_H
 
-#define MAXVAL 100
+#define MAXVAL 101
 
 typedef struct {
     int heapsize;
-    int val[MAXVAL + 1];
+    int val[MAXVAL];
 } Heap;
 
 #define parent(i) (i / 2)

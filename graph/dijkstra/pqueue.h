@@ -3,11 +3,11 @@
 
 #include "graph.h"
 
-#define MAXVAL 100
+#define MAXVAL 101
 
 typedef struct {
     int pqsize;
-    Node *ps[MAXVAL + 1];
+    Node *ps[MAXVAL];
 } Pqueue; 
 
 #define parent(i) (i / 2)
@@ -19,8 +19,8 @@ typedef struct {
  */
 
 Pqueue  *pq_init(void);
-void    pq_destroy(pq **);
-void    pq_push(pq *, Node *);
-int     pq_pop(pq *);
+void    pq_destroy(Pqueue **);
+void    pq_push(Pqueue *, Node *);
+Node    *pq_pop(Pqueue *);
 
 #endif  /* _PQUEUE_H */

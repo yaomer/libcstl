@@ -72,6 +72,9 @@ gh_search(Graph *G, char *s)
     return NULL;
 }
 
+/*
+ * 插入一个索引节点
+ */
 Graph_ *
 gh_insert_head(Graph *G)
 {
@@ -89,6 +92,9 @@ gh_insert_head(Graph *G)
     return p;
 }
 
+/*
+ * 插入一个邻接点
+ */
 void
 gh_insert(Graph_ *G, char *s)
 {

@@ -28,6 +28,7 @@ heap_init(void)
 
     malloc_node(hp, Heap);
     bzero(hp, sizeof(*hp));
+
     return hp;
 }
 
@@ -59,22 +60,28 @@ max_heap(Heap *hp, int i)
 
     l = left(i);
     r = right(i);
+    /* 起初没有检查l,r，导致了一些莫名其妙的bug */
 
     assert(hp);
-    /*  找出a[i]、a[l]、a[r]中的最大值  */
+    /*  找出val[i]、val[l]、val[r]中的最大值  */
+    if (l > hp->heapsize)
+        return;
     if (hp->val[l] > hp->val[i])
         largest = l;
     else
         largest = i;
+    if (r > hp->heapsize)
+        goto next;
     if (hp->val[r] > hp->val[largest])
         largest = r;
-    /* 如果a[i]是最大的，那么以该节点为根的子树已满足最大堆的性质，函数结束；
-     * 否则，最大元素是其某个孩子节点，我们交换a[i]和a[largest]，从而使a[i]
+    /* 如果val[i]是最大的，那么以该节点为根的子树已满足最大堆的性质，函数结束；
+     * 否则，最大元素是其某个孩子节点，我们交换val[i]和val[largest]，从而使val[i]
      * 及其孩子都满足最大堆的性质
      */
+next:
     if (largest != i) {
         swap(hp->val[i], hp->val[largest]);
-        /* 当a[largest]成为a[i]之后，以该节点为根的子树可能会违反最大堆的性质
+        /* 当val[largest]成为val[i]之后，以该节点为根的子树可能会违反最大堆的性质
          * 所以要对该子树递归调用max_heap
          */
         max_heap(hp, largest);
@@ -153,7 +160,7 @@ heap_insert(Heap *hp, int key)
     int i, j;
 
     assert(hp);
-    if ((i = ++hp->heapsize) > MAXVAL)
+    if ((i = ++hp->heapsize) >= MAXVAL)
         error("heap overflow");
 
     hp->val[i] = key;

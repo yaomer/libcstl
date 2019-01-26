@@ -8,24 +8,25 @@ main(void)
     int a[] = {3, 2, 8, 4, 1, 7, 6, 6, 3, 9};
     int i;
 
-    for (i = 0; i < 10; i++)
+    printf("array: ");
+    for (i = 0; i < 10; i++) {
+        printf("%d ", a[i]);
         heap_insert(hp, a[i]);
-
-    printf("array:");
+    }
+    printf("\n");
+    printf("利用heap_insert构建成的一个最大堆:\n");
     for (i = 0; i < 10; i++)
-        printf("%3d", a[i]);
+        printf("%d ", hp->val[i + 1]);
     printf("\n");
 
-    printf("the max value = %3d\n", hp->val[1]);
-    heap_delete(hp);
-    printf("after heap_delete, the max value = %3d\n", hp->val[1]);
-    heap_insert(hp, 9);
+    printf("the top is %d\n", heap_delete(hp));
+    printf("the top is %d\n", heap_delete(hp));
 
-    heap_sort(hp, 10);
+    heap_sort(hp, 8);
 
-    printf("sorted array:");
-    for (i = 1; i <= 10; i++)
-        printf("%3d", hp->val[i]);
+    printf("sorted array: ");
+    for (i = 1; i <= 8; i++)
+        printf("%d ", hp->val[i]);
     printf("\n");
 
     heap_destroy(&hp);
