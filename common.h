@@ -17,7 +17,6 @@
 
 #define copy_node(p1, p2, type) do {  \
     if (p2) {  \
-        /* 终于找着你了: malloc_node(p1, p2);  \ */
         malloc_node(p1, type);  \
         memcpy(p1, p2, sizeof(type));  \
     } else  \
