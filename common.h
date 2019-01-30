@@ -15,6 +15,15 @@
         s1 = s2;  \
 } while (0);
 
+#define copy_node(p1, p2, type) do {  \
+    if (p2) {  \
+        /* 终于找着你了: malloc_node(p1, p2);  \ */
+        malloc_node(p1, type);  \
+        memcpy(p1, p2, sizeof(type));  \
+    } else  \
+        p1 = p2;  \
+} while (0);
+
 #define swap(a, b) do {  \
     typeof(a) tmp = a;  \
     a = b;  \
