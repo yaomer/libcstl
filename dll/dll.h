@@ -10,7 +10,6 @@ typedef struct nlist {
 typedef struct {
     _Link *head;
     _Link *tail;
-    int first;
 } Link;
 
 Link    *dll_init(void);

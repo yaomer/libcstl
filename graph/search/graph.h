@@ -10,13 +10,11 @@ typedef struct graph_ {
     _Graph *head;
     _Graph *tail;
     struct graph_ *down;
-    int first;
 } Graph_;
 
 typedef struct {
     Graph_ *top;
     Graph_ *bottom;
-    int first;
 } Graph;
 
 Graph   *gh_creat(void);

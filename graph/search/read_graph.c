@@ -85,10 +85,8 @@ gh_insert_head(Graph *G)
     if (G->bottom)
         G->bottom->down = p;
     G->bottom = p;
-    if (!G->first) {
+    if (!G->top)
         G->top = G->bottom;
-        G->first = 1;
-    }
     return p;
 }
 
@@ -106,10 +104,8 @@ gh_insert(Graph_ *G, char *s)
         G->tail->next = p;
     p->next = NULL;
     G->tail = p;
-    if (!G->first) {
+    if (!G->head)
         G->head = G->tail;
-        G->first = 1;
-    }
 }
 
 Graph *

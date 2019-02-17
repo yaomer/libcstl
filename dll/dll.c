@@ -11,7 +11,6 @@ dll_init(void)
 
     malloc_node(p, Link);
     p->head = p->tail = NULL;
-    p->first = 0;
 
     return p;
 }
@@ -38,10 +37,8 @@ _dll_insert_head(Link *dp, _Link *p)
     if (dp->head)
         dp->head->last = p;
     dp->head = p;
-    if (!dp->first) {
+    if (!dp->tail)
         dp->tail = dp->head;
-        dp->first = 1;
-    }
 }
 
 void
@@ -64,10 +61,8 @@ _dll_insert_tail(Link *dp, _Link *p)
     p->last = dp->tail;
     p->next = NULL;
     dp->tail = p;
-    if (!dp->first) {
+    if (!dp->head)
         dp->head = dp->tail;
-        dp->first = 1;
-    }
 }
 
 void
@@ -106,7 +101,6 @@ _dll_insert(Link *dp, _Link *x)
     else {   /* 在空表中插入一个节点 */
         x->last = x->next = NULL;
         dp->head = dp->tail = x;
-        dp->first = 1;
     }
 }
 
@@ -141,8 +135,10 @@ dll_delete(Link *dp, int val)
                 p->next->last = p->last;
             else
                 dp->tail = pre;   /* 删除表尾 */
-        } else   /* 删除表头 */
-            dp->head = p->next;
+        } else {   /* 删除表头 */
+            if (!(dp->head = p->next))
+                dp->tail = NULL;
+        }
         free(p);
         p = NULL;
     }
