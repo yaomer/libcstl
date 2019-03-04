@@ -13,7 +13,7 @@
         assert(s1 = strdup(s2));  \
     else  \
         s1 = s2;  \
-} while (0);
+} while (0)
 
 #define copy_node(p1, p2, type) do {  \
     if (p2) {  \
@@ -21,13 +21,13 @@
         memcpy(p1, p2, sizeof(type));  \
     } else  \
         p1 = p2;  \
-} while (0);
+} while (0)
 
 #define swap(a, b) do {  \
     typeof(a) tmp = a;  \
     a = b;  \
     b = tmp;  \
-} while (0);
+} while (0)
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
@@ -35,6 +35,6 @@
 #define error(s) do { \
     fprintf(stderr, "error: %s\n", s); \
     exit(1); \
-} while (0);
+} while (0)
 
 #endif  /* _COMMON_H */
