@@ -31,6 +31,13 @@ static void __list_free_node(list_t *list, struct list_node *node)
     list->size--;
 }
 
+static struct list_node *__alloc_node(void *data)
+{
+    struct list_node *node = Calloc(1, sizeof(struct list_node));
+    node->data = data;
+    return node;
+}
+
 static void __list_insert_front(list_t *list, struct list_node *node)
 {
     if (__front(list)) {
@@ -113,8 +120,8 @@ static void __list_erase(list_t *list, struct list_node *node)
 
 list_t *list_init(__list_comp_handler comp)
 {
-    list_t *list = cstl_calloc(sizeof(list_t));
-    list->list = cstl_calloc(sizeof(struct list_node));
+    list_t *list = Calloc(1, sizeof(list_t));
+    list->list = Calloc(1, sizeof(struct list_node));
     list->list_comp = comp;
     return list;
 }
@@ -164,8 +171,7 @@ struct list_node *list_prev(struct list_node *node)
 void list_push_front(list_t *list, void *data)
 {
     __check_list(list);
-    struct list_node *node = cstl_calloc(sizeof(struct list_node));
-    node->data = data;
+    struct list_node *node = __alloc_node(data);
     __list_insert_front(list, node);
 }
 
@@ -178,8 +184,7 @@ void list_pop_front(list_t *list)
 void list_push_back(list_t *list, void *data)
 {
     __check_list(list);
-    struct list_node *node = cstl_calloc(sizeof(struct list_node));
-    node->data = data;
+    struct list_node *node = __alloc_node(data);
     __list_insert_back(list, node);
 }
 
@@ -193,8 +198,7 @@ void list_insert_before(list_t *list, struct list_node *pos, void *data)
 {
     __check_list(list);
     if (!pos) return;
-    struct list_node *node = cstl_calloc(sizeof(struct list_node));
-    node->data = data;
+    struct list_node *node = __alloc_node(data);
     __list_insert_before(list, pos, node);
 }
 
@@ -212,8 +216,7 @@ struct list_node *list_find(list_t *list, const void *data)
 void list_insert(list_t *list, void *data)
 {
     __check_list(list);
-    struct list_node *node = cstl_calloc(sizeof(struct list_node));
-    node->data = data;
+    struct list_node *node = __alloc_node(data);
     struct list_node *pos = list_find(list, data);
     if (pos) __list_insert_before(list, pos, node);
     else __list_insert_back(list, node);

@@ -4,26 +4,26 @@
 #include <stdlib.h>
 #include <assert.h>
 
-static inline void *cstl_malloc(size_t size)
+static inline void *Malloc(size_t size)
 {
-    void *p = malloc(size);
-    assert(p);
-    return p;
+    void *ptr = malloc(size);
+    assert(ptr);
+    return ptr;
 }
 
 /* alloc and free up memory */
-static inline void *cstl_calloc(size_t size)
+static inline void *Calloc(size_t count, size_t size)
 {
-    void *p = calloc(1, size);
-    assert(p);
-    return p;
+    void *ptr = calloc(count, size);
+    assert(ptr);
+    return ptr;
 }
 
-static inline void *cstl_callocs(size_t count, size_t typesize)
+static inline void *Realloc(void *p, size_t size)
 {
-    void *p = calloc(count, typesize);
-    assert(p);
-    return p;
+    void *ptr = realloc(p, size);
+    assert(ptr);
+    return ptr;
 }
 
 #endif // _LIBCSTL_ALLOC_H
