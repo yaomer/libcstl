@@ -2,7 +2,7 @@
 #define _LIBCSTL_LIST_H
 
 typedef struct __list list_t;
-typedef struct list_node * list_iterator;
+typedef struct __list_iterator * list_iterator;
 /* 用于比较链表节点 */
 typedef int (*__list_comp_handler)(const void *, const void *);
 /* 用于释放链表节点中存储的数据，如果不提供，则在释放节点时不释放数据
@@ -20,10 +20,14 @@ void list_free(list_t *list);
 list_iterator list_front(list_t *list);
 /* 访问list的最后一个元素 */
 list_iterator list_back(list_t *list);
-/* 返回iter的下一个迭代器 */
-list_iterator list_next(list_iterator iter);
-/* 返回iter的上一个迭代器 */
-list_iterator list_prev(list_iterator iter);
+/* 将iter修改为指向下一个元素的迭代器
+ * 如果iter为空或者修改后为空，则返回0，否则返回1 */
+int list_next(list_iterator iter);
+/* 将iter修改为指向上一个元素的迭代器
+ * 如果iter为空或者修改后为空，则返回0，否则返回1 */
+int list_prev(list_iterator iter);
+/* 释放一个迭代器 */
+void list_free_iterator(list_iterator iter);
 /* 取出迭代器中的数据 */
 void *list_get(list_iterator iter);
 
@@ -42,8 +46,10 @@ void list_pop_back(list_t *list);
 void list_push_front(list_t *list, void *data);
 /* 移除首元素 */
 void list_pop_front(list_t *list);
-/* 在list指定位置插入一个元素 */
+/* 按升序顺序在list中插入一个元素 */
 void list_insert(list_t *list, void *data);
+/* 按降序顺序在list中插入一个元素 */
+void list_insert_reverse(list_t *list, void *data);
 /* 在pos之前插入一个元素 */
 void list_insert_before(list_t *list, list_iterator pos, void *data);
 /* 从list中移除一个元素 */

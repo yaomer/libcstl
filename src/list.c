@@ -18,8 +18,14 @@ typedef struct __list {
     __list_free_data_handler list_free_data;
 } list_t;
 
-#define __front(list) (list->list->prev)
-#define __back(list) (list->list->next)
+struct __list_iterator {
+    struct list_node *node;
+};
+
+typedef struct __list_iterator * list_iterator;
+
+#define __front(_list) ((_list)->list->prev)
+#define __back(_list) ((_list)->list->next)
 
 #define __check_list(list) (assert(list))
 
@@ -36,6 +42,24 @@ static struct list_node *__alloc_node(void *data)
     struct list_node *node = Calloc(1, sizeof(struct list_node));
     node->data = data;
     return node;
+}
+
+static list_iterator __alloc_iterator(struct list_node *node)
+{
+    list_iterator iter = Malloc(sizeof(*iter));
+    iter->node = node;
+    return iter;
+}
+
+static struct list_node *__list_find(list_t *list, const void *data)
+{
+    __check_list(list);
+    struct list_node *iter = __front(list);
+    for ( ; iter; iter = iter->next) {
+        if (list->list_comp(iter->data, data) == 0)
+            return iter;
+    }
+    return NULL;
 }
 
 static void __list_insert_front(list_t *list, struct list_node *node)
@@ -62,6 +86,38 @@ static void __list_insert_back(list_t *list, struct list_node *node)
     list->size++;
 }
 
+static void __list_insert_before(list_t *list,
+        struct list_node *pos, struct list_node *node)
+{
+    node->prev = pos->prev;
+    if (pos->prev)
+        pos->prev->next = node;
+    pos->prev = node;
+    node->next = pos;
+    if (!node->prev)
+        __front(list) = node;
+    list->size++;
+}
+
+static void __list_insert(list_t *list, struct list_node *node, int reverse)
+{
+    struct list_node *iter = __front(list);
+    for ( ; iter; iter = iter->next) {
+        if (reverse) {
+            if (list->list_comp(node->data, iter->data) > 0) {
+                __list_insert_before(list, iter, node);
+                return;
+            }
+        } else {
+            if (list->list_comp(node->data, iter->data) < 0) {
+                __list_insert_before(list, iter, node);
+                return;
+            }
+        }
+    }
+    __list_insert_back(list, node);
+}
+
 static void __list_pop_front(list_t *list)
 {
     if (__front(list)) {
@@ -86,19 +142,6 @@ static void __list_pop_back(list_t *list)
             __front(list) = NULL;
         __list_free_node(list, node);
     }
-}
-
-static void __list_insert_before(list_t *list,
-        struct list_node *pos, struct list_node *node)
-{
-    node->prev = pos->prev;
-    if (pos->prev)
-        pos->prev->next = node;
-    pos->prev = node;
-    node->next = pos;
-    if (!node->prev)
-        __front(list) = node;
-    list->size++;
 }
 
 static void __list_erase(list_t *list, struct list_node *node)
@@ -141,31 +184,38 @@ size_t list_size(list_t *list)
     return list->size;
 }
 
-void *list_get(struct list_node *node)
+void *list_get(list_iterator iter)
 {
-    return node->data;
+    return iter->node->data;
 }
 
-struct list_node *list_front(list_t *list)
+list_iterator list_front(list_t *list)
 {
     __check_list(list);
-    return __front(list);
+    return __alloc_iterator(__front(list));
 }
 
-struct list_node *list_back(list_t *list)
+list_iterator list_back(list_t *list)
 {
     __check_list(list);
-    return __back(list);
+    return __alloc_iterator(__back(list));
 }
 
-struct list_node *list_next(struct list_node *node)
+int list_next(list_iterator iter)
 {
-    return node->next;
+    if (iter->node) iter->node = iter->node->next;
+    return iter->node != NULL;
 }
 
-struct list_node *list_prev(struct list_node *node)
+int list_prev(list_iterator iter)
 {
-    return node->prev;
+    if (iter->node) iter->node = iter->node->prev;
+    return iter->node != NULL;
+}
+
+void list_free_iterator(list_iterator iter)
+{
+    free(iter);
 }
 
 void list_push_front(list_t *list, void *data)
@@ -198,30 +248,28 @@ void list_insert_before(list_t *list, struct list_node *pos, void *data)
     if (pos) __list_insert_before(list, pos, __alloc_node(data));
 }
 
-struct list_node *list_find(list_t *list, const void *data)
+list_iterator list_find(list_t *list, const void *data)
 {
-    __check_list(list);
-    struct list_node *iter = list_front(list);
-    for ( ; iter; iter = iter->next) {
-        if (list->list_comp(iter->data, data) == 0)
-            return iter;
-    }
-    return NULL;
+    struct list_node *node = __list_find(list, data);
+    return node ? __alloc_iterator(node) : NULL;
 }
 
 void list_insert(list_t *list, void *data)
 {
     __check_list(list);
-    struct list_node *node = __alloc_node(data);
-    struct list_node *pos = list_find(list, data);
-    if (pos) __list_insert_before(list, pos, node);
-    else __list_insert_back(list, node);
+    __list_insert(list, __alloc_node(data), 0);
+}
+
+void list_insert_reverse(list_t *list, void *data)
+{
+    __check_list(list);
+    __list_insert(list, __alloc_node(data), 1);
 }
 
 void list_erase(list_t *list, const void *data)
 {
     __check_list(list);
-    struct list_node *node = list_find(list, data);
+    struct list_node *node = __list_find(list, data);
     if (node) __list_erase(list, node);
 }
 
@@ -230,8 +278,8 @@ list_t *list_merge(list_t *list1, list_t *list2)
     __check_list(list1);
     __check_list(list2);
     list_t *list = list_init(list1->list_comp);
-    struct list_node *iter1 = list_front(list1);
-    struct list_node *iter2 = list_front(list2);
+    struct list_node *iter1 = __front(list1);
+    struct list_node *iter2 = __front(list2);
     struct list_node *_iter1 = iter1, *_iter2 = iter2;
     while (iter1 && iter2) {
         if (list->list_comp(iter1->data, iter2->data) == 0) {
@@ -264,16 +312,21 @@ list_t *list_merge(list_t *list1, list_t *list2)
 void list_reverse(list_t *list)
 {
     __check_list(list);
-    /* swap __front() and __back() */
-    struct list_node *tmp = __front(list);
-    __front(list) = __back(list);
-    __back(list) = tmp;
+    struct list_node *iter = __front(list);
+    struct list_node *_iter;
+    __front(list) = __back(list) = NULL;
+    while (iter) {
+        _iter = iter->next;
+        iter->next = iter->prev = NULL;
+        __list_insert_front(list, iter);
+        iter = _iter;
+    }
 }
 
 void list_unique(list_t *list)
 {
     __check_list(list);
-    struct list_node *iter = list_front(list);
+    struct list_node *iter = __front(list);
     while (iter && iter->next) {
         if (list->list_comp(iter->data, iter->next->data) == 0) {
             __list_erase(list, iter->next);
