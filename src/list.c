@@ -171,8 +171,7 @@ struct list_node *list_prev(struct list_node *node)
 void list_push_front(list_t *list, void *data)
 {
     __check_list(list);
-    struct list_node *node = __alloc_node(data);
-    __list_insert_front(list, node);
+    __list_insert_front(list, __alloc_node(data));
 }
 
 void list_pop_front(list_t *list)
@@ -184,8 +183,7 @@ void list_pop_front(list_t *list)
 void list_push_back(list_t *list, void *data)
 {
     __check_list(list);
-    struct list_node *node = __alloc_node(data);
-    __list_insert_back(list, node);
+    __list_insert_back(list, __alloc_node(data));
 }
 
 void list_pop_back(list_t *list)
@@ -197,9 +195,7 @@ void list_pop_back(list_t *list)
 void list_insert_before(list_t *list, struct list_node *pos, void *data)
 {
     __check_list(list);
-    if (!pos) return;
-    struct list_node *node = __alloc_node(data);
-    __list_insert_before(list, pos, node);
+    if (pos) __list_insert_before(list, pos, __alloc_node(data));
 }
 
 struct list_node *list_find(list_t *list, const void *data)
@@ -225,8 +221,8 @@ void list_insert(list_t *list, void *data)
 void list_erase(list_t *list, const void *data)
 {
     __check_list(list);
-    struct list_node *iter = list_find(list, data);
-    if (iter) __list_erase(list, iter);
+    struct list_node *node = list_find(list, data);
+    if (node) __list_erase(list, node);
 }
 
 list_t *list_merge(list_t *list1, list_t *list2)
