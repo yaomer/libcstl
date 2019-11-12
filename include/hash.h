@@ -22,8 +22,10 @@ hash_t *hash_init(__hash_handler hash, __hash_comp_handler comp);
 hash_iterator hash_begin(hash_t *hash);
 /* 将iter修改为指向下一个元素的迭代器，如果成功则返回1，否则返回0 */
 int hash_next(hash_iterator iter);
-/* 取出迭代器中的数据 */
-void *hash_get(hash_iterator iter);
+/* 取出迭代器中的键 */
+void *hash_get_key(hash_iterator iter);
+/* 取出迭代器中的值 */
+void *hash_get_data(hash_iterator iter);
 /* 释放一个迭代器 */
 void hash_free_iterator(hash_iterator iter);
 /* 在hash中查找一个指定元素 */

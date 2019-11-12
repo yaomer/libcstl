@@ -150,7 +150,7 @@ static void __hash_set_iterator(hash_iterator iter, hash_t *hash,
 
 hash_t *hash_init(__hash_handler _hash, __hash_comp_handler _comp)
 {
-    hash_t *hash = calloc(1, sizeof(hash_t));
+    hash_t *hash = Calloc(1, sizeof(hash_t));
     assert(hash);
     hash->hashsize = HASH_INIT_SIZE;
     hash->buckets = __alloc_buckets(hash->hashsize);
@@ -206,7 +206,12 @@ int hash_next(hash_iterator iter)
     return 0;
 }
 
-void *hash_get(hash_iterator iter)
+void *hash_get_key(hash_iterator iter)
+{
+    return iter->node->key;
+}
+
+void *hash_get_data(hash_iterator iter)
 {
     return iter->node->data;
 }
