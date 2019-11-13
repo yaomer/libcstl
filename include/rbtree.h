@@ -21,7 +21,7 @@ int rbtree_prev(rbtree_iterator iter);
 /* 取出迭代器中的键 */
 void *rbtree_get_key(rbtree_iterator iter);
 /* 取出迭代器中的值 */
-void *rbtree_get_data(rbtree_iterator iter);
+void *rbtree_get_value(rbtree_iterator iter);
 /* 释放一个迭代器 */
 void rbtree_free_iterator(rbtree_iterator iter);
 /* 如果树为空，则返回1；否则返回0 */
@@ -31,7 +31,7 @@ size_t rbtree_size(rbtree_t *rbt);
 /* 在树中查找指定节点，并返回其迭代器 */
 rbtree_iterator rbtree_find(rbtree_t *rbt, const void *key);
 /* 在树中插入一个节点 */
-void rbtree_insert(rbtree_t *rbt, void *key, void *data);
+void rbtree_insert(rbtree_t *rbt, void *key, void *value);
 /* 从树中擦除一个节点 */
 void rbtree_erase(rbtree_t *rbt, const void *key);
 /* 返回键值大于等于key的最小节点 */

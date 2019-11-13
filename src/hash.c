@@ -4,14 +4,14 @@
 
 struct hash_node {
     void *key;
-    void *data;
+    void *value;
     struct hash_node *next;
 };
 
 typedef size_t (*__hash_handler)(const void *);
 typedef int (*__hash_comp_handler)(const void *, const void *);
 typedef void (*__hash_free_key_handler)(void *);
-typedef void (*__hash_free_data_handler)(void *);
+typedef void (*__hash_free_value_handler)(void *);
 
 typedef struct __hash {
     size_t hashsize;  /* 哈希表的大小，即桶的数目 */
@@ -21,7 +21,7 @@ typedef struct __hash {
     __hash_handler hash;
     __hash_comp_handler hash_comp;
     __hash_free_key_handler hash_free_key;
-    __hash_free_data_handler hash_free_data;
+    __hash_free_value_handler hash_free_value;
 } hash_t;
 
 struct __hash_iterator {
@@ -51,11 +51,11 @@ static struct hash_node **__alloc_buckets(size_t size)
     return buckets;
 }
 
-static struct hash_node *__alloc_node(void *key, void *data)
+static struct hash_node *__alloc_node(void *key, void *value)
 {
     struct hash_node *node = Calloc(1, sizeof(struct hash_node));
     node->key = key;
-    node->data = data;
+    node->value = value;
     return node;
 }
 
@@ -134,8 +134,8 @@ static void __hash_free_node(hash_t *hash, struct hash_node *node)
 {
     if (hash->hash_free_key)
         hash->hash_free_key(node->key);
-    if (hash->hash_free_data)
-        hash->hash_free_data(node->data);
+    if (hash->hash_free_value)
+        hash->hash_free_value(node->value);
     free(node);
     hash->hashnums--;
 }
@@ -161,11 +161,11 @@ hash_t *hash_init(__hash_handler _hash, __hash_comp_handler _comp)
 
 void hash_set_free_handler(hash_t *hash,
                            __hash_free_key_handler freekey,
-                           __hash_free_data_handler freedata)
+                           __hash_free_value_handler freevalue)
 {
     __check_hash(hash);
     hash->hash_free_key = freekey;
-    hash->hash_free_data = freedata;
+    hash->hash_free_value = freevalue;
 }
 
 hash_iterator hash_begin(hash_t *hash)
@@ -211,9 +211,9 @@ void *hash_get_key(hash_iterator iter)
     return iter->node->key;
 }
 
-void *hash_get_data(hash_iterator iter)
+void *hash_get_value(hash_iterator iter)
 {
-    return iter->node->data;
+    return iter->node->value;
 }
 
 void hash_free_iterator(hash_iterator iter)
@@ -230,10 +230,10 @@ hash_iterator hash_find(hash_t *hash, const void *key)
     return iter;
 }
 
-void hash_insert(hash_t *hash, void *key, void *data)
+void hash_insert(hash_t *hash, void *key, void *value)
 {
     __check_hash(hash);
-    __hash_insert(hash, __alloc_node(key, data));
+    __hash_insert(hash, __alloc_node(key, value));
     __hash_expand(hash);
 }
 

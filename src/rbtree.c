@@ -24,7 +24,7 @@ struct rbtree_node {
     struct rbtree_node *parent;
     unsigned char color;
     void *key;
-    void *data;
+    void *value;
 };
 
 typedef int (*__rbtree_comp_handler)(const void *, const void *);
@@ -45,11 +45,11 @@ typedef struct __rbtree_iterator * rbtree_iterator;
 
 #define __check_rbtree(rbt) (assert(rbt))
 
-static struct rbtree_node *__alloc_node(void *key, void *data)
+static struct rbtree_node *__alloc_node(void *key, void *value)
 {
     struct rbtree_node *node = Calloc(1, sizeof(struct rbtree_node));
     node->key = key;
-    node->data = data;
+    node->value = value;
     return node;
 }
 
@@ -512,9 +512,9 @@ void *rbtree_get_key(rbtree_iterator iter)
     return iter->node->key;
 }
 
-void *rbtree_get_data(rbtree_iterator iter)
+void *rbtree_get_value(rbtree_iterator iter)
 {
-    return iter->node->data;
+    return iter->node->value;
 }
 
 rbtree_iterator rbtree_find(rbtree_t *rbt, const void *key)
@@ -524,10 +524,10 @@ rbtree_iterator rbtree_find(rbtree_t *rbt, const void *key)
     return node ? __alloc_iterator(node) : NULL;
 }
 
-void rbtree_insert(rbtree_t *rbt, void *key, void *data)
+void rbtree_insert(rbtree_t *rbt, void *key, void *value)
 {
     __check_rbtree(rbt);
-    __rbtree_insert(rbt, __alloc_node(key, data));
+    __rbtree_insert(rbt, __alloc_node(key, value));
 }
 
 void rbtree_erase(rbtree_t *rbt, const void *key)
