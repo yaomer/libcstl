@@ -1,6 +1,8 @@
 #ifndef _LIBCSTL_LIST_H
 #define _LIBCSTL_LIST_H
 
+#include <stddef.h> /* for size_t */
+
 typedef struct __list list_t;
 typedef struct __list_iterator * list_iterator;
 /* 用于比较链表节点 */

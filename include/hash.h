@@ -1,6 +1,8 @@
 #ifndef _LIBCSTL_HASH_H
 #define _LIBCSTL_HASH_H
 
+#include <stddef.h> /* for size_t */
+
 typedef struct __hash hash_t;
 typedef struct __hash_iterator * hash_iterator;
 

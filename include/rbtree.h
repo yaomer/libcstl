@@ -1,6 +1,8 @@
 #ifndef _LIBCSTL_RBTREE_H
 #define _LIBCSTL_RBTREE_H
 
+#include <stddef.h> /* for size_t */
+
 typedef struct __rbtree rbtree_t;
 typedef struct __rbtree_iterator * rbtree_iterator;
 /* 用于比较树节点 */
@@ -38,5 +40,7 @@ rbtree_iterator rbtree_lower_bound(rbtree_t *rbt, const void *key);
 rbtree_iterator rbtree_upper_bound(rbtree_t *rbt, const void *key);
 /* 清空树 */
 void rbtree_clear(rbtree_t *rbt);
+/* 释放一个树 */
+void rbtree_free(rbtree_t *rbt);
 
 #endif // _LIBCSTL_RBTREE_H
