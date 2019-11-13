@@ -282,25 +282,26 @@ list_t *list_merge(list_t *list1, list_t *list2)
     struct list_node *iter2 = __front(list2);
     struct list_node *_iter1 = iter1, *_iter2 = iter2;
     while (iter1 && iter2) {
-        if (list->list_comp(iter1->data, iter2->data) == 0) {
+        if (list->list_comp(iter1->data, iter2->data) < 0) {
             _iter1 = iter1->next;
             __list_insert_back(list, iter1);
+            list1->size--;
         } else {
             _iter2 = iter2->next;
             __list_insert_back(list, iter2);
+            list2->size--;
         }
         iter1 = _iter1;
         iter2 = _iter2;
     }
-    while (iter1) {
-        _iter1 = iter1->next;
-        __list_insert_back(list, iter1);
-        iter1 = _iter1;
-    }
-    while (iter2) {
-        _iter2 = iter2->next;
-        __list_insert_back(list, iter2);
-        iter2 = _iter2;
+    if (iter1) {
+        __back(list)->next = iter1;
+        __back(list) = __back(list1);
+        list->size += list1->size;
+    } else if (iter2) {
+        __back(list)->next = iter2;
+        __back(list) = __back(list2);
+        list->size += list2->size;
     }
     free(list1->list);
     free(list1);
