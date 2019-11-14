@@ -55,7 +55,7 @@ static struct rbtree_node *__alloc_node(void *key, void *value)
     return node;
 }
 
-static struct rbtree_node *__free_node(rbtree_t *rbt, struct rbtree_node *node)
+static void __free_node(rbtree_t *rbt, struct rbtree_node *node)
 {
     if (rbt->rbtree_free)
         rbt->rbtree_free(node->key, node->value);
