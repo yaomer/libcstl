@@ -60,7 +60,6 @@ static void __free_node(rbtree_t *rbt, struct rbtree_node *node)
     if (rbt->rbtree_free)
         rbt->rbtree_free(node->key, node->value);
     free(node);
-    rbt->size--;
 }
 
 static rbtree_iterator __alloc_iterator(struct rbtree_node *node)
@@ -325,8 +324,15 @@ static void __rbtree_insert(rbtree_t *rbt, struct rbtree_node *p)
         pre = root;
         if (rbt->rbtree_comp(p->key, root->key) < 0)
             root = root->left;
-        else
+        else if (rbt->rbtree_comp(p->key, root->key) > 0)
             root = root->right;
+        else { /* 更新旧节点的值 */
+            if (rbt->rbtree_free)
+                rbt->rbtree_free(NULL, root->value);
+            root->value = p->value;
+            __free_node(rbt, p);
+            return;
+        }
     }
     p->parent = pre;
     if (pre) {
@@ -476,6 +482,7 @@ static void __rbtree_delete(rbtree_t *rbt, struct rbtree_node *p)
     if (origin_color == BLACK)
         __rbtree_delete_fixup(rbt, x);
     __free_node(rbt, p);
+    rbt->size--;
 }
 
 rbtree_t *rbtree_init(__rbtree_comp_handler rcomp, __rbtree_free_handler rfree)
