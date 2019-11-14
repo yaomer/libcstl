@@ -28,6 +28,7 @@ struct rbtree_node {
 };
 
 typedef int (*__rbtree_comp_handler)(const void *, const void *);
+typedef void (*__rbtree_free_handler)(void *, void *);
 
 typedef struct __rbtree {
     size_t size;
@@ -35,6 +36,7 @@ typedef struct __rbtree {
     struct rbtree_node *begin;
     struct rbtree_node *end;
     __rbtree_comp_handler rbtree_comp;
+    __rbtree_free_handler rbtree_free;
 } rbtree_t;
 
 struct __rbtree_iterator {
@@ -51,6 +53,14 @@ static struct rbtree_node *__alloc_node(void *key, void *value)
     node->key = key;
     node->value = value;
     return node;
+}
+
+static struct rbtree_node *__free_node(rbtree_t *rbt, struct rbtree_node *node)
+{
+    if (rbt->rbtree_free)
+        rbt->rbtree_free(node->key, node->value);
+    free(node);
+    rbt->size--;
 }
 
 static rbtree_iterator __alloc_iterator(struct rbtree_node *node)
@@ -465,14 +475,14 @@ static void __rbtree_delete(rbtree_t *rbt, struct rbtree_node *p)
     }
     if (origin_color == BLACK)
         __rbtree_delete_fixup(rbt, x);
-    free(p);
-    rbt->size--;
+    __free_node(rbt, p);
 }
 
-rbtree_t *rbtree_init(__rbtree_comp_handler comp)
+rbtree_t *rbtree_init(__rbtree_comp_handler rcomp, __rbtree_free_handler rfree)
 {
     rbtree_t *rbt = Calloc(1, sizeof(rbtree_t));
-    rbt->rbtree_comp = comp;
+    rbt->rbtree_comp = rcomp;
+    rbt->rbtree_free = rfree;
     return rbt;
 }
 

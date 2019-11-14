@@ -10,8 +10,7 @@ struct hash_node {
 
 typedef size_t (*__hash_handler)(const void *);
 typedef int (*__hash_comp_handler)(const void *, const void *);
-typedef void (*__hash_free_key_handler)(void *);
-typedef void (*__hash_free_value_handler)(void *);
+typedef void (*__hash_free_handler)(void *, void *);
 
 typedef struct __hash {
     size_t hashsize;  /* 哈希表的大小，即桶的数目 */
@@ -20,8 +19,7 @@ typedef struct __hash {
     struct hash_node **buckets;
     __hash_handler hash;
     __hash_comp_handler hash_comp;
-    __hash_free_key_handler hash_free_key;
-    __hash_free_value_handler hash_free_value;
+    __hash_free_handler hash_free;
 } hash_t;
 
 struct __hash_iterator {
@@ -132,10 +130,8 @@ static void __hash_shrink(hash_t *hash)
 
 static void __hash_free_node(hash_t *hash, struct hash_node *node)
 {
-    if (hash->hash_free_key)
-        hash->hash_free_key(node->key);
-    if (hash->hash_free_value)
-        hash->hash_free_value(node->value);
+    if (hash->hash_free)
+        hash->hash_free(node->key, node->value);
     free(node);
     hash->hashnums--;
 }
@@ -148,24 +144,16 @@ static void __hash_set_iterator(hash_iterator iter, hash_t *hash,
     iter->count = hash->count;
 }
 
-hash_t *hash_init(__hash_handler _hash, __hash_comp_handler _comp)
+hash_t *hash_init(__hash_handler hhash, __hash_comp_handler hcomp, __hash_free_handler hfree)
 {
     hash_t *hash = Calloc(1, sizeof(hash_t));
     assert(hash);
     hash->hashsize = HASH_INIT_SIZE;
     hash->buckets = __alloc_buckets(hash->hashsize);
-    hash->hash = _hash;
-    hash->hash_comp = _comp;
+    hash->hash = hhash;
+    hash->hash_comp = hcomp;
+    hash->hash_free = hfree;
     return hash;
-}
-
-void hash_set_free_handler(hash_t *hash,
-                           __hash_free_key_handler freekey,
-                           __hash_free_value_handler freevalue)
-{
-    __check_hash(hash);
-    hash->hash_free_key = freekey;
-    hash->hash_free_value = freevalue;
 }
 
 hash_iterator hash_begin(hash_t *hash)
