@@ -163,11 +163,10 @@ static void __rbtree_update_begin_and_end_in_insert(rbtree_t *rb, struct rbtree_
 
 static void __rbtree_update_begin_and_end_in_delete(rbtree_t *rb, struct rbtree_node *node)
 {
-    if (node == rb->begin) {
+    if (node == rb->begin)
         rb->begin = __rbtree_successor(node);
-    } else if (node == rb->end) {
+    if (node == rb->end)
         rb->end = __rbtree_predecessor(node);
-    }
 }
 
 /* 返回键值大于等于key的最小节点 */
