@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdbool.h>
 
 #include "alloc.h"
 
@@ -9,7 +10,7 @@ struct hash_node {
 };
 
 typedef size_t (*__hash_handler)(const void *);
-typedef int (*__hash_comp_handler)(const void *, const void *);
+typedef bool (*__hash_equal_handler)(const void *, const void *);
 typedef void (*__hash_free_handler)(void *, void *);
 
 typedef struct __hash {
@@ -18,7 +19,7 @@ typedef struct __hash {
     size_t count; /* 如果发生扩容或缩容操作，则count计数器加1 */
     struct hash_node **buckets;
     __hash_handler hash;
-    __hash_comp_handler hash_comp;
+    __hash_equal_handler hash_equal;
     __hash_free_handler hash_free;
 } hash_t;
 
@@ -74,7 +75,7 @@ struct hash_node *__hash_find(hash_t *hash, const void *key)
     size_t hashval = __hash(hash, key);
     struct hash_node *node = hash->buckets[hashval];
     for ( ; node; node = node->next)
-        if (hash->hash_comp(node->key, key) == 0)
+        if (hash->hash_equal(node->key, key))
             return node;
     return NULL;
 }
@@ -144,14 +145,13 @@ static void __hash_set_iterator(hash_iterator iter, hash_t *hash,
     iter->count = hash->count;
 }
 
-hash_t *hash_init(__hash_handler hhash, __hash_comp_handler hcomp, __hash_free_handler hfree)
+hash_t *hash_init(__hash_handler hhash, __hash_equal_handler hequal, __hash_free_handler hfree)
 {
     hash_t *hash = Calloc(1, sizeof(hash_t));
-    assert(hash);
     hash->hashsize = HASH_INIT_SIZE;
     hash->buckets = __alloc_buckets(hash->hashsize);
     hash->hash = hhash;
-    hash->hash_comp = hcomp;
+    hash->hash_equal = hequal;
     hash->hash_free = hfree;
     return hash;
 }
@@ -233,7 +233,7 @@ void hash_erase(hash_t *hash, const void *key)
     struct hash_node *pre = NULL;
 
     for ( ; node; node = node->next) {
-        if (hash->hash_comp(node->key, key) == 0)
+        if (hash->hash_equal(node->key, key))
             break;
         pre = node;
     }

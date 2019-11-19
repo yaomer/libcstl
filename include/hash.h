@@ -2,6 +2,7 @@
 #define _LIBCSTL_HASH_H
 
 #include <stddef.h> /* for size_t */
+#include <stdbool.h>
 
 typedef struct __hash hash_t;
 typedef struct __hash_iterator * hash_iterator;
@@ -9,12 +10,12 @@ typedef struct __hash_iterator * hash_iterator;
 /* hash函数 */
 typedef size_t (*__hash_handler)(const void *);
 /* 查找和删除时用于判断键值是否相等 */
-typedef int (*__hash_comp_handler)(const void *, const void *);
+typedef bool (*__hash_equal_handler)(const void *, const void *);
 /* 用于释放存储的键和值 */
 typedef void (*__hash_free_handler)(void *, void *);
 
 /* 初始化一个hash */
-hash_t *hash_init(__hash_handler hash, __hash_comp_handler hcomp, __hash_free_handler hfree);
+hash_t *hash_init(__hash_handler hash, __hash_equal_handler hequal, __hash_free_handler hfree);
 /* 返回指向hash首元素的迭代器 */
 hash_iterator hash_begin(hash_t *hash);
 /* 将iter修改为指向下一个元素的迭代器，如果成功则返回1，否则返回0 */
