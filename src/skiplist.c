@@ -168,7 +168,7 @@ skiplist_t *skiplist_init(__skiplist_comp_handler slcomp, __skiplist_free_handle
     sl->head = __alloc_node(NULL, NULL, SKIPLIST_MAX_LEVEL);
     sl->sl_comp = slcomp;
     sl->sl_free = slfree;
-    srand(clock());
+    srandom(time(NULL));
     return sl;
 }
 
