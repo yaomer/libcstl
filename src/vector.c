@@ -185,6 +185,7 @@ void vector_push_back(vector_t *v, const void *data)
 void vector_pop_back(vector_t *v)
 {
     __check_vector(v);
+    if (v->size == 0) return;
     v->size--;
 }
 
