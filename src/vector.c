@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdbool.h>
 
 #include "alloc.h"
 
@@ -38,8 +39,10 @@ static void __vector_realloc(vector_t *v, size_t new_count)
 static void __vector_free(vector_t *v, size_t start)
 {
     if (!v->vector_free) return;
-    for (size_t i = start; i < v->size; i++)
-        v->vector_free(v->data + __vector_offset(v, i));
+    for (size_t i = start; i < v->size; i++) {
+        void *ptr = *(void**)(v->data + __vector_offset(v, i));
+        if (ptr) v->vector_free(ptr);
+    }
 }
 
 static vector_iterator __alloc_iterator(vector_t *v, size_t index)
@@ -133,7 +136,7 @@ void *vector_data(vector_t *v)
     return v->data;
 }
 
-int vector_empty(vector_t *v)
+bool vector_empty(vector_t *v)
 {
     __check_vector(v);
     return v->size == 0;
@@ -192,7 +195,12 @@ void vector_pop_back(vector_t *v)
 void vector_resize(vector_t *v, size_t count)
 {
     vector_reserve(v, count);
-    if (count < v->size) __vector_free(v, count);
+    if (count < v->size) {
+        __vector_free(v, count);
+    } else {
+        void *ptr = v->data + __vector_offset(v, v->size);
+        memset(ptr, 0, (count - v->size) * v->typesize);
+    }
     v->size = count;
 }
 

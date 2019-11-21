@@ -2,13 +2,14 @@
 #define _LIBCSTL_VECTOR_H
 
 #include <stddef.h> /* for size_t */
+#include <stdbool.h>
 
 typedef struct __vector vector_t;
 typedef struct __vector_iterator * vector_iterator;
 /* vector拷贝数据时默认执行的操作是：memcpy(des, user_data, typesize)
  * __vector_copy_handler可用于让用户定义自己需要的拷贝行为 */
 typedef void (*__vector_copy_handler)(void *, const void *);
-/* 用于释放存储的数据 */
+/* 如果vector中存放的是指针，则需要提供此函数来释放存储的数据 */
 typedef void (*__vector_free_handler)(void *);
 
 /* 初始化一个vector */
@@ -28,7 +29,7 @@ void *vector_get(vector_iterator iter);
 /* 释放一个迭代器 */
 void vector_free_iterator(vector_iterator iter);
 /* 判断vector是否为空 */
-int vector_empty(vector_t *v);
+bool vector_empty(vector_t *v);
 /* 返回容纳的元素数 */
 size_t vector_size(vector_t *v);
 /* 返回当前存储空间能够容纳的元素数 */
