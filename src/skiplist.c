@@ -1,5 +1,6 @@
 #include <time.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "alloc.h"
 
@@ -196,9 +197,9 @@ int skiplist_prev(skiplist_iterator iter)
     return iter->node != NULL;
 }
 
-int skiplist_comp(skiplist_iterator iter1, skiplist_iterator iter2)
+bool skiplist_equal(skiplist_iterator iter1, skiplist_iterator iter2)
 {
-    return iter1->node != iter2->node;
+    return iter1->node == iter2->node;
 }
 
 void *skiplist_get_key(skiplist_iterator iter)

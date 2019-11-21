@@ -2,6 +2,7 @@
 #define _LIBCSTL_SKIPLIST_H
 
 #include <stddef.h> /* for size_t */
+#include <stdbool.h>
 
 typedef struct __skiplist skiplist_t;
 typedef struct __skiplist_iterator * skiplist_iterator;
@@ -20,8 +21,8 @@ skiplist_iterator skiplist_end(skiplist_t *sl);
 int skiplist_next(skiplist_iterator iter);
 /* 返回iter的上一个迭代器，如果iter为空或上一个迭代器为空，则返回0 */
 int skiplist_prev(skiplist_iterator iter);
-/* if iter1 == iter2, return 0 */
-int skiplist_comp(skiplist_iterator iter1, skiplist_iterator iter2);
+/* if iter1 == iter2, return true */
+bool skiplist_equal(skiplist_iterator iter1, skiplist_iterator iter2);
 /* 取出迭代器中的键 */
 void *skiplist_get_key(skiplist_iterator iter);
 /* 取出迭代器中的值 */
