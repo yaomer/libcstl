@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "alloc.h"
 
 struct list_node {
@@ -53,7 +55,6 @@ static list_iterator __alloc_iterator(struct list_node *node)
 
 static struct list_node *__list_find(list_t *list, const void *data)
 {
-    __check_list(list);
     struct list_node *iter = __front(list);
     for ( ; iter; iter = iter->next) {
         if (list->list_comp(iter->data, data) == 0)
@@ -171,16 +172,19 @@ list_t *list_init(__list_comp_handler comp)
 
 void list_set_free_data_handler(list_t *list, void (*list_free_data)(void *))
 {
+    __check_list(list);
     list->list_free_data = list_free_data;
 }
 
-int list_empty(list_t *list)
+bool list_empty(list_t *list)
 {
+    __check_list(list);
     return list->size == 0;
 }
 
 size_t list_size(list_t *list)
 {
+    __check_list(list);
     return list->size;
 }
 
@@ -250,6 +254,7 @@ void list_insert_before(list_t *list, struct list_node *pos, void *data)
 
 list_iterator list_find(list_t *list, const void *data)
 {
+    __check_list(list);
     struct list_node *node = __list_find(list, data);
     return node ? __alloc_iterator(node) : NULL;
 }

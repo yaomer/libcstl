@@ -2,6 +2,7 @@
 #define _LIBCSTL_LIST_H
 
 #include <stddef.h> /* for size_t */
+#include <stdbool.h>
 
 typedef struct __list list_t;
 typedef struct __list_iterator * list_iterator;
@@ -34,7 +35,7 @@ void list_free_iterator(list_iterator iter);
 void *list_get(list_iterator iter);
 
 /* list是否为空 */
-int list_empty(list_t *list);
+bool list_empty(list_t *list);
 /* 返回list的容量 */
 size_t list_size(list_t *list);
 
