@@ -219,13 +219,12 @@ void vector_clear(vector_t *v)
 void vector_swap(vector_t *v, size_t i, size_t j)
 {
     __check_vector(v);
-    void *tmp = Malloc(v->typesize);
+    char buf[v->typesize];
     void *vi = __vector_off_ptr(v, i);
     void *vj = __vector_off_ptr(v, j);
-    memcpy(tmp, vi, v->typesize);
+    memcpy(buf, vi, v->typesize);
     memcpy(vi, vj, v->typesize);
-    memcpy(vj, tmp, v->typesize);
-    free(tmp);
+    memcpy(vj, buf, v->typesize);
 }
 
 void vector_free(vector_t *v)
