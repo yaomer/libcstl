@@ -30,6 +30,11 @@ static size_t __vector_offset(vector_t *v, size_t n)
     return n * v->typesize;
 }
 
+static void *__vector_off_ptr(vector_t *v, size_t off)
+{
+    return v->data + v->typesize * off;
+}
+
 static void __vector_realloc(vector_t *v, size_t new_count)
 {
     v->data = Realloc(v->data, __vector_offset(v, new_count));
@@ -40,7 +45,7 @@ static void __vector_free(vector_t *v, size_t start)
 {
     if (!v->vector_free) return;
     for (size_t i = start; i < v->size; i++) {
-        void *ptr = *(void**)(v->data + __vector_offset(v, i));
+        void *ptr = *(void**)__vector_off_ptr(v, i);
         if (ptr) v->vector_free(ptr);
     }
 }
@@ -58,23 +63,23 @@ static void __vector_insert(vector_t *v, size_t pos, const void *data)
 {
     if (v->size + 1 > v->alloc_size)
         __vector_realloc(v, v->alloc_size * VECTOR_INCR_FACTOR);
-    void *p = v->data + __vector_offset(v, pos);
+    void *ptr = __vector_off_ptr(v, pos);
     if (pos < v->size) {
-        memmove(p + v->typesize, p, __vector_offset(v, v->size - pos));
+        memmove(ptr + v->typesize, ptr, __vector_offset(v, v->size - pos));
     }
     if (v->vector_copy)
-        v->vector_copy(p, data);
+        v->vector_copy(ptr, data);
     else
-        memcpy(p, data, v->typesize);
+        memcpy(ptr, data, v->typesize);
     v->size++;
 }
 
 static void __vector_erase(vector_t *v, size_t pos)
 {
     if (pos >= v->size) return;
-    void *p = v->data + __vector_offset(v, pos);
+    void *ptr = __vector_off_ptr(v, pos);
     if (pos < v->size - 1) {
-        memmove(p, p + v->typesize, __vector_offset(v, v->size - 1 - pos));
+        memmove(ptr, ptr + v->typesize, __vector_offset(v, v->size - 1 - pos));
     }
     v->size--;
 }
@@ -103,7 +108,7 @@ void vector_set_free_handler(vector_t *v, __vector_free_handler vfree)
 void *vector_entry(vector_t *v, size_t index)
 {
     __check_vector(v);
-    return v->data + __vector_offset(v, index);
+    return __vector_off_ptr(v, index);
 }
 
 vector_iterator vector_begin(vector_t *v)
@@ -122,7 +127,7 @@ int vector_next(vector_iterator iter)
 
 void *vector_get(vector_iterator iter)
 {
-    return iter->vector->data + __vector_offset(iter->vector, iter->index);
+    return __vector_off_ptr(iter->vector, iter->index);
 }
 
 void vector_free_iterator(vector_iterator iter)
@@ -198,7 +203,7 @@ void vector_resize(vector_t *v, size_t count)
     if (count < v->size) {
         __vector_free(v, count);
     } else {
-        void *ptr = v->data + __vector_offset(v, v->size);
+        void *ptr = __vector_off_ptr(v, v->size);
         memset(ptr, 0, (count - v->size) * v->typesize);
     }
     v->size = count;
@@ -215,8 +220,8 @@ void vector_swap(vector_t *v, size_t i, size_t j)
 {
     __check_vector(v);
     void *tmp = Malloc(v->typesize);
-    void *vi = v->data + __vector_offset(v, i);
-    void *vj = v->data + __vector_offset(v, j);
+    void *vi = __vector_off_ptr(v, i);
+    void *vj = __vector_off_ptr(v, j);
     memcpy(tmp, vi, v->typesize);
     memcpy(vi, vj, v->typesize);
     memcpy(vj, tmp, v->typesize);
