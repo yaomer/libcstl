@@ -10,12 +10,12 @@ typedef struct __list_iterator * list_iterator;
 typedef int (*__list_comp_handler)(const void *, const void *);
 /* 用于释放链表节点中存储的数据，如果不提供，则在释放节点时不释放数据
  * 它通常有两种选择，一种是free()，一种是自定义的释放函数 */
-typedef void (*__list_free_data_handler)(void *);
+typedef void (*__list_free_handler)(void *);
 
 /* 初始化一个list */
 list_t *list_init(__list_comp_handler comp);
 /* 设置list释放数据时调用的函数 */
-void list_set_free_data_handler(__list_free_data_handler);
+void list_set_free_handler(list_t *list, __list_free_handler lfree);
 /* 释放一个list */
 void list_free(list_t *list);
 
@@ -23,12 +23,10 @@ void list_free(list_t *list);
 list_iterator list_front(list_t *list);
 /* 访问list的最后一个元素 */
 list_iterator list_back(list_t *list);
-/* 将iter修改为指向下一个元素的迭代器
- * 如果iter为空或者修改后为空，则返回0，否则返回1 */
-int list_next(list_iterator iter);
-/* 将iter修改为指向上一个元素的迭代器
- * 如果iter为空或者修改后为空，则返回0，否则返回1 */
-int list_prev(list_iterator iter);
+/* 将iter修改为指向下一个元素的迭代器，如果成功，则返回真 */
+bool list_next(list_iterator iter);
+/* 将iter修改为指向上一个元素的迭代器，如果成功，则返回真 */
+bool list_prev(list_iterator iter);
 /* 释放一个迭代器 */
 void list_free_iterator(list_iterator iter);
 /* 取出迭代器中的数据 */

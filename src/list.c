@@ -9,7 +9,7 @@ struct list_node {
 };
 
 typedef int (*__list_comp_handler)(const void *, const void *);
-typedef void (*__list_free_data_handler)(void *);
+typedef void (*__list_free_handler)(void *);
 
 typedef struct __list {
     size_t size;
@@ -17,7 +17,7 @@ typedef struct __list {
      * list->next -> list tail */
     struct list_node *list;
     __list_comp_handler list_comp;
-    __list_free_data_handler list_free_data;
+    __list_free_handler list_free;
 } list_t;
 
 struct __list_iterator {
@@ -33,8 +33,8 @@ typedef struct __list_iterator * list_iterator;
 
 static void __list_free_node(list_t *list, struct list_node *node)
 {
-    if (list->list_free_data)
-        list->list_free_data(node->data);
+    if (list->list_free)
+        list->list_free(node->data);
     free(node);
     list->size--;
 }
@@ -170,10 +170,10 @@ list_t *list_init(__list_comp_handler comp)
     return list;
 }
 
-void list_set_free_data_handler(list_t *list, void (*list_free_data)(void *))
+void list_set_free_handler(list_t *list, __list_free_handler lfree)
 {
     __check_list(list);
-    list->list_free_data = list_free_data;
+    list->list_free = lfree;
 }
 
 bool list_empty(list_t *list)
@@ -205,13 +205,13 @@ list_iterator list_back(list_t *list)
     return __alloc_iterator(__back(list));
 }
 
-int list_next(list_iterator iter)
+bool list_next(list_iterator iter)
 {
     if (iter->node) iter->node = iter->node->next;
     return iter->node != NULL;
 }
 
-int list_prev(list_iterator iter)
+bool list_prev(list_iterator iter)
 {
     if (iter->node) iter->node = iter->node->prev;
     return iter->node != NULL;
