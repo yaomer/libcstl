@@ -163,7 +163,24 @@ void deque_set_free_handler(deque_t *d, __deque_free_handler dfree)
     d->deque_free = dfree;
 }
 
-deque_iterator deque_front(deque_t *d)
+void *deque_entry(deque_t *d, size_t index)
+{
+    __check_deque(d);
+    deque_pos pos = __deque_get_pos(d, index);
+    return __deque_off_ptr(d, pos.node, pos.index);
+}
+
+void *deque_front(deque_t *d)
+{
+    return deque_entry(d, 0);
+}
+
+void *deque_back(deque_t *d)
+{
+    return deque_entry(d, d->size - 1);
+}
+
+deque_iterator deque_begin(deque_t *d)
 {
     __check_deque(d);
     if (d->size == 0) return NULL;
@@ -171,7 +188,7 @@ deque_iterator deque_front(deque_t *d)
     return __alloc_iterator(d, d->map[pos.node], pos.index);
 }
 
-deque_iterator deque_back(deque_t *d)
+deque_iterator deque_end(deque_t *d)
 {
     __check_deque(d);
     if (d->size == 0) return NULL;
@@ -212,13 +229,6 @@ void *deque_get(deque_iterator iter)
 void deque_free_iterator(deque_iterator iter)
 {
     free(iter);
-}
-
-void *deque_entry(deque_t *d, size_t index)
-{
-    __check_deque(d);
-    deque_pos pos = __deque_get_pos(d, index);
-    return __deque_off_ptr(d, pos.node, pos.index);
 }
 
 bool deque_empty(deque_t *d)

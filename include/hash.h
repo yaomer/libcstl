@@ -16,8 +16,10 @@ typedef void (*__hash_free_handler)(void *, void *);
 
 /* 初始化一个hash */
 hash_t *hash_init(__hash_handler hash, __hash_equal_handler hequal, __hash_free_handler hfree);
-/* 返回指向hash首元素的迭代器 */
+/* 返回指向第一个元素的迭代器 */
 hash_iterator hash_begin(hash_t *hash);
+/* 返回指向最后一个元素的迭代器 */
+hash_iterator hash_end(hash_t *hash);
 /* 将iter修改为指向下一个元素的迭代器，如果成功则返回1，否则返回0 */
 int hash_next(hash_iterator iter);
 /* 取出迭代器中的键 */
@@ -26,6 +28,10 @@ void *hash_get_key(hash_iterator iter);
 void *hash_get_value(hash_iterator iter);
 /* 释放一个迭代器 */
 void hash_free_iterator(hash_iterator iter);
+/* 返回hash是否为空 */
+bool hash_empty(hash_t *hash);
+/* 返回hash中容纳的元素数 */
+size_t hash_size(hash_t *hash);
 /* 在hash中查找一个指定元素 */
 hash_iterator hash_find(hash_t *hash, const void *key);
 /* 在hash中插入一个键值对 */

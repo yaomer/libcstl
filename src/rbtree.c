@@ -11,6 +11,8 @@
  * 性质5很难维护。而删除一个节点则可能会破坏性质2 4 5。
  */
 
+#include <stdbool.h>
+
 #include "alloc.h"
 
 enum {
@@ -571,18 +573,18 @@ rbtree_iterator rbtree_end(rbtree_t *rb)
     return rb->end ? __alloc_iterator(rb->end) : NULL;
 }
 
-int rbtree_next(rbtree_iterator iter)
+bool rbtree_next(rbtree_iterator iter)
 {
-    if (!iter->node) return 0;
+    if (!iter->node) return false;
     iter->node = __rbtree_successor(iter->node);
-    return iter->node ? 1 : 0;
+    return iter->node != NULL;
 }
 
-int rbtree_prev(rbtree_iterator iter)
+bool rbtree_prev(rbtree_iterator iter)
 {
-    if (!iter->node) return 0;
+    if (!iter->node) return false;
     iter->node = __rbtree_predecessor(iter->node);
-    return iter->node ? 1 : 0;
+    return iter->node != NULL;
 }
 
 void rbtree_free_iterator(rbtree_iterator iter)
@@ -631,7 +633,7 @@ void rbtree_erase(rbtree_t *rb, const void *key)
     if (p) __rbtree_delete(rb, p);
 }
 
-int rbtree_empty(rbtree_t *rb)
+bool rbtree_empty(rbtree_t *rb)
 {
     __check_rbtree(rb);
     return rb->size == 0;

@@ -20,10 +20,18 @@ void vector_set_copy_handler(vector_t *v, __vector_copy_handler vcopy);
 void vector_set_free_handler(vector_t *v, __vector_free_handler vfree);
 /* return vector[index]，不进行越界检查 */
 void *vector_entry(vector_t *vector, size_t index);
-/* 返回vector首元素的迭代器 */
+/* 访问第一个元素 */
+void *vector_front(vector_t *v);
+/* 访问最后一个元素 */
+void *vector_back(vector_t *v);
+/* 返回指向第一个元素的迭代器 */
 vector_iterator vector_begin(vector_t *v);
-/* 返回指向下一个节点的迭代器，如果iter为空或者下一个节点为空，则返回0；否则返回1 */
-int vector_next(vector_iterator iter);
+/* 返回指向最后一个元素的迭代器 */
+vector_iterator vector_end(vector_t *v);
+/* 返回指向下一个元素的迭代器，如果成功，则返回真 */
+bool vector_next(vector_iterator iter);
+/* 返回指向上一个元素的迭代器，如果成功，则返回真 */
+bool vector_prev(vector_iterator iter);
 /* 取出迭代器中的数据 */
 void *vector_get(vector_iterator iter);
 /* 释放一个迭代器 */

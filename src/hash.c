@@ -170,7 +170,21 @@ hash_iterator hash_begin(hash_t *hash)
     return NULL;
 }
 
-int hash_next(hash_iterator iter)
+hash_iterator hash_end(hash_t *hash)
+{
+    __check_hash(hash);
+    hash_iterator iter = __alloc_iterator();
+    for (ssize_t i = hash->hashsize - 1; i >= 0; i--) {
+        if (hash->buckets[i]) {
+            __hash_set_iterator(iter, hash, hash->buckets[i]);
+            return iter;
+        }
+    }
+    free(iter);
+    return NULL;
+}
+
+bool hash_next(hash_iterator iter)
 {
     hash_t *hash = iter->hash;
     if (iter->count != hash->count) {
@@ -207,6 +221,18 @@ void *hash_get_value(hash_iterator iter)
 void hash_free_iterator(hash_iterator iter)
 {
     free(iter);
+}
+
+bool hash_empty(hash_t *hash)
+{
+    __check_hash(hash);
+    return hash->hashsize == 0;
+}
+
+size_t hash_size(hash_t *hash)
+{
+    __check_hash(hash);
+    return hash->hashsize;
 }
 
 hash_iterator hash_find(hash_t *hash, const void *key)

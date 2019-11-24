@@ -111,18 +111,41 @@ void *vector_entry(vector_t *v, size_t index)
     return __vector_off_ptr(v, index);
 }
 
+void *vector_front(vector_t *v)
+{
+    return vector_entry(v, 0);
+}
+
+void *vector_back(vector_t *v)
+{
+    return vector_entry(v, v->size - 1);
+}
+
 vector_iterator vector_begin(vector_t *v)
 {
     __check_vector(v);
     return __alloc_iterator(v, 0);
 }
 
-int vector_next(vector_iterator iter)
+vector_iterator vector_end(vector_t *v)
 {
-    if (iter->index + 1 > iter->vector->size - 1)
-        return 0;
+    __check_vector(v);
+    return __alloc_iterator(v, v->size - 1);
+}
+
+bool vector_next(vector_iterator iter)
+{
+    if (iter->index + 1 == iter->vector->size)
+        return false;
     iter->index++;
-    return 1;
+    return true;
+}
+
+bool vector_prev(vector_iterator iter)
+{
+    if (iter->index == 0) return false;
+    iter->index--;
+    return true;
 }
 
 void *vector_get(vector_iterator iter)

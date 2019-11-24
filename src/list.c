@@ -193,13 +193,25 @@ void *list_get(list_iterator iter)
     return iter->node->data;
 }
 
-list_iterator list_front(list_t *list)
+void *list_front(list_t *list)
+{
+    __check_list(list);
+    return __front(list)->data;
+}
+
+void *list_back(list_t *list)
+{
+    __check_list(list);
+    return __back(list)->data;
+}
+
+list_iterator list_begin(list_t *list)
 {
     __check_list(list);
     return __alloc_iterator(__front(list));
 }
 
-list_iterator list_back(list_t *list)
+list_iterator list_end(list_t *list)
 {
     __check_list(list);
     return __alloc_iterator(__back(list));

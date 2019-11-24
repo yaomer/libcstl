@@ -19,10 +19,14 @@ void list_set_free_handler(list_t *list, __list_free_handler lfree);
 /* 释放一个list */
 void list_free(list_t *list);
 
-/* 访问list的第一个元素 */
-list_iterator list_front(list_t *list);
-/* 访问list的最后一个元素 */
-list_iterator list_back(list_t *list);
+/* 访问第一个元素 */
+void *list_front(list_t *list);
+/* 访问最后一个元素 */
+void *list_back(list_t *list);
+/* 返回指向第一个元素的迭代器 */
+list_iterator list_begin(list_t *list);
+/* 返回指向最后一个元素的迭代器 */
+list_iterator list_end(list_t *list);
 /* 将iter修改为指向下一个元素的迭代器，如果成功，则返回真 */
 bool list_next(list_iterator iter);
 /* 将iter修改为指向上一个元素的迭代器，如果成功，则返回真 */

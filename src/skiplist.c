@@ -185,13 +185,13 @@ skiplist_iterator skiplist_end(skiplist_t *sl)
     return __alloc_iterator(sl->end);
 }
 
-int skiplist_next(skiplist_iterator iter)
+bool skiplist_next(skiplist_iterator iter)
 {
     if (iter->node) iter->node = iter->node->next[0];
     return iter->node != NULL;
 }
 
-int skiplist_prev(skiplist_iterator iter)
+bool skiplist_prev(skiplist_iterator iter)
 {
     if (iter->node) iter->node = iter->node->prev;
     return iter->node != NULL;
@@ -238,7 +238,7 @@ void skiplist_erase(skiplist_t *sl, const void *key)
     __skiplist_erase(sl, key);
 }
 
-int skiplist_empty(skiplist_t *sl)
+bool skiplist_empty(skiplist_t *sl)
 {
     __check_skiplist(sl);
     return sl->size == 0;

@@ -18,9 +18,13 @@ void deque_set_free_handler(deque_t *d, __deque_free_handler dfree);
 /* 初始化一个deque */
 deque_t *deque_init(size_t typesize);
 /* 访问首元素 */
-deque_iterator deque_front(deque_t *d);
+void *deque_front(deque_t *d);
 /* 访问尾元素 */
-deque_iterator deque_back(deque_t *d);
+void *deque_back(deque_t *d);
+/* 返回指向首元素的迭代器 */
+deque_iterator deque_begin(deque_t *d);
+/* 返回指向尾元素的迭代器 */
+deque_iterator deque_end(deque_t *d);
 /* 返回下一个元素的迭代器，如果成功，返回真 */
 bool deque_next(deque_iterator iter);
 /* 返回上一个元素的迭代器，如果成功，返回真 */

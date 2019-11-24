@@ -18,9 +18,9 @@ skiplist_iterator skiplist_begin(skiplist_t *sl);
 /* 返回最大迭代器 */
 skiplist_iterator skiplist_end(skiplist_t *sl);
 /* 返回iter的下一个迭代器，如果iter为空或下一个迭代器为空，则返回0 */
-int skiplist_next(skiplist_iterator iter);
+bool skiplist_next(skiplist_iterator iter);
 /* 返回iter的上一个迭代器，如果iter为空或上一个迭代器为空，则返回0 */
-int skiplist_prev(skiplist_iterator iter);
+bool skiplist_prev(skiplist_iterator iter);
 /* if iter1 == iter2, return true */
 bool skiplist_equal(skiplist_iterator iter1, skiplist_iterator iter2);
 /* 取出迭代器中的键 */
@@ -36,7 +36,7 @@ void skiplist_insert(skiplist_t *sl, void *key, void *value);
 /* 擦除键为key的节点 */
 void skiplist_erase(skiplist_t *sl, const void *key);
 /* 返回跳表是否为空 */
-int skiplist_empty(skiplist_t *sl);
+bool skiplist_empty(skiplist_t *sl);
 /* 返回跳表的大小 */
 size_t skiplist_size(skiplist_t *sl);
 /* 返回键值大于等于key的最小节点 */
