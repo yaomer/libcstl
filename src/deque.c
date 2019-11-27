@@ -46,7 +46,7 @@ typedef struct __deque_pos {
 
 #define __front_off(x) (DEQUE_BUF_SIZE - 1 - x)
 
-#define __get_pointer(x) (*(void**)x)
+#define __get_pointer(x) (*(void**)(x))
 
 static struct deque_node *__alloc_node(deque_t *d, size_t map_index)
 {

@@ -24,7 +24,7 @@ typedef struct __vector_iterator {
 
 #define __check_vector(v) (assert(v))
 
-#define __get_pointer(x) (*(void**)x)
+#define __get_pointer(x) (*(void**)(x))
 
 static size_t __vector_offset(vector_t *v, size_t n)
 {
