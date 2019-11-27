@@ -16,18 +16,12 @@ typedef struct __stack {
 
 typedef void (*__stack_free_handler)(void *);
 
-static void scopy(void *des, const void *src)
-{
-    memcpy(des, &src, sizeof(const void *));
-}
-
 Stack *stack_init(const char *name, __stack_free_handler sfree)
 {
     Stack *s = Malloc(sizeof(Stack));
     if (name && strcmp(name, "vector") == 0) {
         s->adaptor = S_VECTOR;
-        s->stack = vector_init(sizeof(void*));
-        vector_set_copy_handler(s->stack, scopy);
+        s->stack = vector_init_p();
         vector_set_free_handler(s->stack, sfree);
     } else if (name && strcmp(name, "list") == 0) {
         s->adaptor = S_LIST;
@@ -35,8 +29,7 @@ Stack *stack_init(const char *name, __stack_free_handler sfree)
         list_set_free_handler(s->stack, sfree);
     } else {
         s->adaptor = S_DEQUE;
-        s->stack = deque_init(sizeof(void*));
-        deque_set_copy_handler(s->stack, scopy);
+        s->stack = deque_init_p();
         deque_set_free_handler(s->stack, sfree);
     }
     return s;
@@ -65,9 +58,9 @@ size_t stack_size(Stack *s)
 
 void *stack_top(Stack *s)
 {
-    __do_stack(s, return *(void**)vector_back(s->stack),
+    __do_stack(s, return vector_back_p(s->stack),
                   return list_back(s->stack),
-                  return *(void**)deque_back(s->stack));
+                  return deque_back_p(s->stack));
 }
 
 void stack_push(Stack *s, void *data)

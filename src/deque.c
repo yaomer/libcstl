@@ -13,7 +13,6 @@ struct deque_node {
     char buf[]; /* 数据缓冲区 */
 };
 
-typedef void (*__deque_copy_handler)(void *, const void *);
 typedef void (*__deque_free_handler)(void *);
 
 typedef struct __deque {
@@ -25,8 +24,8 @@ typedef struct __deque {
     size_t pbs; /* push_back operation times */
     size_t mapsize;
     struct deque_node **map;
-    __deque_copy_handler deque_copy;
     __deque_free_handler deque_free;
+    bool pointer;
 } deque_t;
 
 typedef struct __deque_iterator {
@@ -46,6 +45,8 @@ typedef struct __deque_pos {
 #define __back(d) (d->map[d->back])
 
 #define __front_off(x) (DEQUE_BUF_SIZE - 1 - x)
+
+#define __get_pointer(x) (*(void**)x)
 
 static struct deque_node *__alloc_node(deque_t *d, size_t map_index)
 {
@@ -151,10 +152,11 @@ deque_t *deque_init(size_t typesize)
     return d;
 }
 
-void deque_set_copy_handler(deque_t *d, __deque_copy_handler dcopy)
+deque_t *deque_init_p(void)
 {
-    __check_deque(d);
-    d->deque_copy = dcopy;
+    deque_t *d = deque_init(sizeof(void*));
+    d->pointer = true;
+    return d;
 }
 
 void deque_set_free_handler(deque_t *d, __deque_free_handler dfree)
@@ -170,14 +172,30 @@ void *deque_entry(deque_t *d, size_t index)
     return __deque_off_ptr(d, pos.node, pos.index);
 }
 
+void *deque_entry_p(deque_t *d, size_t index)
+{
+    return __get_pointer(deque_entry(d, index));
+}
+
 void *deque_front(deque_t *d)
 {
     return deque_entry(d, 0);
 }
 
+void *deque_front_p(deque_t *d)
+{
+    return deque_entry_p(d, 0);
+}
+
 void *deque_back(deque_t *d)
 {
-    return deque_entry(d, d->size - 1);
+    __check_deque(d);
+    return d->size > 0 ? deque_entry(d, d->size - 1) : NULL;
+}
+
+void *deque_back_p(deque_t *d)
+{
+    return __get_pointer(deque_back(d));
 }
 
 deque_iterator deque_begin(deque_t *d)
@@ -226,6 +244,11 @@ void *deque_get(deque_iterator iter)
     return iter->node->buf + iter->index * iter->deque->typesize;
 }
 
+void *deque_get_p(deque_iterator iter)
+{
+    return __get_pointer(deque_get(iter));
+}
+
 void deque_free_iterator(deque_iterator iter)
 {
     free(iter);
@@ -271,7 +294,7 @@ void deque_push_back(deque_t *d, const void *data)
     }
     if (!__back(d)) __back(d) = __alloc_node(d, d->back);
     char *ptr = __deque_off_ptr(d, d->back, __back(d)->index);
-    if (d->deque_copy) d->deque_copy(ptr, data);
+    if (d->pointer) memcpy(ptr, &data, d->typesize);
     else memcpy(ptr, data, d->typesize);
     __back(d)->index++;
     d->pbs++;
@@ -315,7 +338,7 @@ void deque_push_front(deque_t *d, const void *data)
     }
     if (!__front(d)) __front(d) = __alloc_node(d, d->front);
     char *ptr = __deque_off_ptr(d, d->front, __front_off(__front(d)->index));
-    if (d->deque_copy) d->deque_copy(ptr, data);
+    if (d->pointer) memcpy(ptr, &data, d->typesize);
     else memcpy(ptr, data, d->typesize);
     __front(d)->index++;
     d->pfs++;

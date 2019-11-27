@@ -3,7 +3,6 @@
 
 #include "alloc.h"
 
-typedef void (*__vector_copy_handler)(void *, const void *);
 typedef void (*__vector_free_handler)(void *);
 
 typedef struct __vector {
@@ -11,8 +10,8 @@ typedef struct __vector {
     size_t size;    /* 已使用大小 */
     size_t alloc_size;  /* 已分配的内存大小 */
     size_t typesize;  /* 存储的类型大小 */
-    __vector_copy_handler vector_copy;
     __vector_free_handler vector_free;
+    bool pointer;
 } vector_t;
 
 typedef struct __vector_iterator {
@@ -24,6 +23,8 @@ typedef struct __vector_iterator {
 #define VECTOR_INCR_FACTOR 2
 
 #define __check_vector(v) (assert(v))
+
+#define __get_pointer(x) (*(void**)x)
 
 static size_t __vector_offset(vector_t *v, size_t n)
 {
@@ -45,7 +46,7 @@ static void __vector_free(vector_t *v, size_t start)
 {
     if (!v->vector_free) return;
     for (size_t i = start; i < v->size; i++) {
-        void *ptr = *(void**)__vector_off_ptr(v, i);
+        void *ptr = __get_pointer(__vector_off_ptr(v, i));
         if (ptr) v->vector_free(ptr);
     }
 }
@@ -58,20 +59,25 @@ static vector_iterator __alloc_iterator(vector_t *v, size_t index)
     return iter;
 }
 
-/* 在pos处插入一个元素 */
-static void __vector_insert(vector_t *v, size_t pos, const void *data)
+/* 在pos处插入count个元素 */
+static void __vector_insert(vector_t *v, size_t pos, const void *data, size_t count)
 {
-    if (v->size + 1 > v->alloc_size)
-        __vector_realloc(v, v->alloc_size * VECTOR_INCR_FACTOR);
-    void *ptr = __vector_off_ptr(v, pos);
-    if (pos < v->size) {
-        memmove(ptr + v->typesize, ptr, __vector_offset(v, v->size - pos));
+    if (v->size + count > v->alloc_size) {
+        while (v->alloc_size < v->size + count)
+            v->alloc_size *= VECTOR_INCR_FACTOR;
+        __vector_realloc(v, v->alloc_size);
     }
-    if (v->vector_copy)
-        v->vector_copy(ptr, data);
-    else
-        memcpy(ptr, data, v->typesize);
-    v->size++;
+    void *ptr = __vector_off_ptr(v, pos);
+    size_t offset = __vector_offset(v, count);
+    if (pos < v->size) {
+        memmove(ptr + offset, ptr, __vector_offset(v, v->size - pos));
+    }
+    if (v->pointer) {
+        memcpy(ptr, &data, offset);
+    } else {
+        memcpy(ptr, data, offset);
+    }
+    v->size += count;
 }
 
 static void __vector_erase(vector_t *v, size_t pos)
@@ -93,10 +99,11 @@ vector_t *vector_init(size_t typesize)
     return v;
 }
 
-void vector_set_copy_handler(vector_t *v, __vector_copy_handler vcopy)
+vector_t *vector_init_p(void)
 {
-    __check_vector(v);
-    v->vector_copy = vcopy;
+    vector_t *v = vector_init(sizeof(void*));
+    v->pointer = true;
+    return v;
 }
 
 void vector_set_free_handler(vector_t *v, __vector_free_handler vfree)
@@ -111,14 +118,30 @@ void *vector_entry(vector_t *v, size_t index)
     return __vector_off_ptr(v, index);
 }
 
+void *vector_entry_p(vector_t *v, size_t index)
+{
+    return __get_pointer(vector_entry(v, index));
+}
+
 void *vector_front(vector_t *v)
 {
     return vector_entry(v, 0);
 }
 
+void *vector_front_p(vector_t *v)
+{
+    return vector_entry_p(v, 0);
+}
+
 void *vector_back(vector_t *v)
 {
-    return vector_entry(v, v->size - 1);
+    __check_vector(v);
+    return v->size > 0 ? vector_entry(v, v->size - 1) : NULL;
+}
+
+void *vector_back_p(vector_t *v)
+{
+    return __get_pointer(vector_back(v));
 }
 
 vector_iterator vector_begin(vector_t *v)
@@ -130,7 +153,7 @@ vector_iterator vector_begin(vector_t *v)
 vector_iterator vector_end(vector_t *v)
 {
     __check_vector(v);
-    return __alloc_iterator(v, v->size - 1);
+    return v->size > 0 ? __alloc_iterator(v, v->size - 1) : NULL;
 }
 
 bool vector_next(vector_iterator iter)
@@ -151,6 +174,11 @@ bool vector_prev(vector_iterator iter)
 void *vector_get(vector_iterator iter)
 {
     return __vector_off_ptr(iter->vector, iter->index);
+}
+
+void *vector_get_p(vector_iterator iter)
+{
+    return __get_pointer(vector_get(iter));
 }
 
 void vector_free_iterator(vector_iterator iter)
@@ -198,7 +226,14 @@ void vector_shrink_to_fit(vector_t *v)
 void vector_insert(vector_t *v, vector_iterator pos, const void *data)
 {
     __check_vector(v);
-    if (pos) __vector_insert(v, pos->index, data);
+    if (pos) __vector_insert(v, pos->index, data, 1);
+}
+
+/* 插入从data开始的count个元素 */
+void vector_insert1(vector_t *v, vector_iterator pos, const void *data, size_t count)
+{
+    __check_vector(v);
+    if (pos) __vector_insert(v, pos->index, data, count);
 }
 
 void vector_erase(vector_t *v, vector_iterator pos)
@@ -210,7 +245,7 @@ void vector_erase(vector_t *v, vector_iterator pos)
 void vector_push_back(vector_t *v, const void *data)
 {
     __check_vector(v);
-    __vector_insert(v, v->size, data);
+    __vector_insert(v, v->size, data, 1);
 }
 
 void vector_pop_back(vector_t *v)

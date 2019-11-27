@@ -14,11 +14,6 @@ typedef struct __queue {
 
 typedef void (*__queue_free_handler)(void *);
 
-static void qcopy(void *des, const void *src)
-{
-    memcpy(des, &src, sizeof(const void *));
-}
-
 queue_t *queue_init(const char *name, __queue_free_handler qfree)
 {
     queue_t *q = Calloc(1, sizeof(queue_t));
@@ -28,8 +23,7 @@ queue_t *queue_init(const char *name, __queue_free_handler qfree)
         list_set_free_handler(q->queue, qfree);
     } else {
         q->adaptor = Q_DEQUE;
-        q->queue = deque_init(sizeof(void*));
-        deque_set_copy_handler(q->queue, qcopy);
+        q->queue = deque_init_p();
         deque_set_free_handler(q->queue, qfree);
     }
     return q;
@@ -44,13 +38,13 @@ queue_t *queue_init(const char *name, __queue_free_handler qfree)
 void *queue_front(queue_t *q)
 {
     __do_queue(q, return list_front(q->queue),
-                  return *(void**)deque_front(q->queue));
+                  return deque_front_p(q->queue));
 }
 
 void *queue_back(queue_t *q)
 {
     __do_queue(q, return list_back(q->queue),
-                  return *(void**)deque_back(q->queue));
+                  return deque_back_p(q->queue));
 }
 
 bool queue_empty(queue_t *q)
