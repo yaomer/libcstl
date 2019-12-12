@@ -375,6 +375,21 @@ static void __rbtree_insert_fixup(rbtree_t *rb, struct rbtree_node *x)
     rb->root->color = BLACK;
 }
 
+static void __rbtree_undo_modify_of_size(rbtree_t *rb, struct rbtree_node *x)
+{
+    struct rbtree_node *p = rb->root;
+    while (p) {
+        if (rb->rb_comp(x->key, p->key) < 0) {
+            p->size--;
+            p = p->left;
+        } else if (rb->rb_comp(x->key, p->key) > 0) {
+            p->size--;
+            p = p->right;
+        } else
+            break;
+    }
+}
+
 /*
  * 插入过程类似于bst的插入过程，只不过多了一步fixup
  */
@@ -399,6 +414,7 @@ static void __rbtree_insert(rbtree_t *rb, struct rbtree_node *p)
                 rb->rb_free(p->key, NULL);
             }
             root->value = p->value;
+            __rbtree_undo_modify_of_size(rb, p);
             free(p);
             return;
         }
