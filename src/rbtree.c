@@ -377,17 +377,7 @@ static void __rbtree_insert_fixup(rbtree_t *rb, struct rbtree_node *x)
 
 static void __rbtree_undo_modify_of_size(rbtree_t *rb, struct rbtree_node *x)
 {
-    struct rbtree_node *p = rb->root;
-    while (p) {
-        if (rb->rb_comp(x->key, p->key) < 0) {
-            p->size--;
-            p = p->left;
-        } else if (rb->rb_comp(x->key, p->key) > 0) {
-            p->size--;
-            p = p->right;
-        } else
-            break;
-    }
+    (void)__rbtree_find_in_delete(rb, x->key);
 }
 
 /*
