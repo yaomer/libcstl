@@ -56,6 +56,7 @@ static struct rbtree_node *__alloc_node(void *key, void *value)
     node->key = key;
     node->value = value;
     node->size = 1;
+    node->color = RED;
     return node;
 }
 
@@ -417,8 +418,6 @@ static void __rbtree_insert(rbtree_t *rb, struct rbtree_node *p)
             pre->right = p;
     } else
         rb->root = p;
-    p->left = p->right = NULL;
-    p->color = RED;
     __rbtree_insert_fixup(rb, p);
     rb->size++;
 }
