@@ -51,10 +51,8 @@ void list_pop_back(list_t *list);
 void list_push_front(list_t *list, void *data);
 /* 移除首元素 */
 void list_pop_front(list_t *list);
-/* 按升序顺序在list中插入一个元素 */
+/* 按顺序(lcomp() < 0)在list中插入一个元素 */
 void list_insert(list_t *list, void *data);
-/* 按降序顺序在list中插入一个元素 */
-void list_insert_reverse(list_t *list, void *data);
 /* 在pos之前插入一个元素 */
 void list_insert_before(list_t *list, list_iterator pos, void *data);
 /* 从list中移除一个元素 */

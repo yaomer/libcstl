@@ -96,20 +96,13 @@ static void __list_insert_before(list_t *list,
     list->size++;
 }
 
-static void __list_insert(list_t *list, struct list_node *node, int reverse)
+static void __list_insert(list_t *list, struct list_node *node)
 {
     struct list_node *iter = list->front;
     for ( ; iter; iter = iter->next) {
-        if (reverse) {
-            if (list->list_comp(node->data, iter->data) > 0) {
-                __list_insert_before(list, iter, node);
-                return;
-            }
-        } else {
-            if (list->list_comp(node->data, iter->data) < 0) {
-                __list_insert_before(list, iter, node);
-                return;
-            }
+        if (list->list_comp(node->data, iter->data) < 0) {
+            __list_insert_before(list, iter, node);
+            return;
         }
     }
     __list_insert_back(list, node);
@@ -269,13 +262,7 @@ list_iterator list_find(list_t *list, const void *data)
 void list_insert(list_t *list, void *data)
 {
     __check_list(list);
-    __list_insert(list, __alloc_node(data), 0);
-}
-
-void list_insert_reverse(list_t *list, void *data)
-{
-    __check_list(list);
-    __list_insert(list, __alloc_node(data), 1);
+    __list_insert(list, __alloc_node(data));
 }
 
 void list_erase(list_t *list, const void *data)
