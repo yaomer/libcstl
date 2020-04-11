@@ -20,10 +20,10 @@ enum {
     BLACK
 };
 
-struct rbtree_node {
-    struct rbtree_node *left;
-    struct rbtree_node *right;
-    struct rbtree_node *parent;
+struct rb_node {
+    struct rb_node *left;
+    struct rb_node *right;
+    struct rb_node *parent;
     void *key;
     void *value;
     size_t size;  /* 子树大小 */
@@ -35,24 +35,24 @@ typedef void (*__rbtree_free_handler)(void *, void *);
 
 typedef struct __rbtree {
     size_t size;
-    struct rbtree_node *root;
-    struct rbtree_node *begin;
-    struct rbtree_node *end;
+    struct rb_node *root;
+    struct rb_node *begin;
+    struct rb_node *end;
     __rbtree_comp_handler rb_comp;
     __rbtree_free_handler rb_free;
 } rbtree_t;
 
-struct __rbtree_iterator {
-    struct rbtree_node *node;
+struct __rb_iterator {
+    struct rb_node *node;
 };
 
-typedef struct __rbtree_iterator * rbtree_iterator;
+typedef struct __rb_iterator * rb_iterator;
 
 #define __check_rbtree(rb) (assert(rb))
 
-static struct rbtree_node *__alloc_node(void *key, void *value)
+static struct rb_node *__alloc_node(void *key, void *value)
 {
-    struct rbtree_node *node = Calloc(1, sizeof(struct rbtree_node));
+    struct rb_node *node = Calloc(1, sizeof(struct rb_node));
     node->key = key;
     node->value = value;
     node->size = 1;
@@ -60,7 +60,7 @@ static struct rbtree_node *__alloc_node(void *key, void *value)
     return node;
 }
 
-static void __free_node(rbtree_t *rb, struct rbtree_node *node)
+static void __free_node(rbtree_t *rb, struct rb_node *node)
 {
     if (rb->rb_free)
         rb->rb_free(node->key, node->value);
@@ -68,26 +68,26 @@ static void __free_node(rbtree_t *rb, struct rbtree_node *node)
     rb->size--;
 }
 
-static rbtree_iterator __alloc_iterator(struct rbtree_node *node)
+static rb_iterator __alloc_iterator(struct rb_node *node)
 {
-    rbtree_iterator iter = Malloc(sizeof(*iter));
+    rb_iterator iter = Malloc(sizeof(*iter));
     iter->node = node;
     return iter;
 }
 
-static struct rbtree_node *__rbtree_find(rbtree_t *rb, struct rbtree_node *p, const void *key)
+static struct rb_node *__rb_find(rbtree_t *rb, struct rb_node *p, const void *key)
 {
     if (!p || rb->rb_comp(key, p->key) == 0)
         return p;
     else if (rb->rb_comp(key, p->key) < 0)
-        return __rbtree_find(rb, p->left, key);
+        return __rb_find(rb, p->left, key);
     else
-        return __rbtree_find(rb, p->right, key);
+        return __rb_find(rb, p->right, key);
 }
 
-static struct rbtree_node *__rbtree_find_in_delete(rbtree_t *rb, const void *key)
+static struct rb_node *__rb_find_in_delete(rbtree_t *rb, const void *key)
 {
-    struct rbtree_node *p = rb->root;
+    struct rb_node *p = rb->root;
     while (p) {
         if (rb->rb_comp(key, p->key) < 0) {
             p->size--;
@@ -103,7 +103,7 @@ static struct rbtree_node *__rbtree_find_in_delete(rbtree_t *rb, const void *key
 }
 
 /* 返回最小节点 */
-static struct rbtree_node *__rbtree_min(struct rbtree_node *p)
+static struct rb_node *__rb_min(struct rb_node *p)
 {
     if (p)
         while (p->left)
@@ -112,7 +112,7 @@ static struct rbtree_node *__rbtree_min(struct rbtree_node *p)
 }
 
 /* 返回最大节点 */
-static struct rbtree_node *__rbtree_max(struct rbtree_node *p)
+static struct rb_node *__rb_max(struct rb_node *p)
 {
     if (p)
         while (p->right)
@@ -128,10 +128,10 @@ static struct rbtree_node *__rbtree_max(struct rbtree_node *p)
  *   / \
  *  4   7
  */
-static struct rbtree_node *__rbtree_successor(struct rbtree_node *node)
+static struct rb_node *__rb_successor(struct rb_node *node)
 {
-    if (node->right) return __rbtree_min(node->right);
-    struct rbtree_node *p = node->parent;
+    if (node->right) return __rb_min(node->right);
+    struct rb_node *p = node->parent;
     /* if node == p->left, return p */
     while (p && node == p->right) {
         node = p;
@@ -141,10 +141,10 @@ static struct rbtree_node *__rbtree_successor(struct rbtree_node *node)
 }
 
 /* 返回node的前驱节点 */
-static struct rbtree_node *__rbtree_predecessor(struct rbtree_node *node)
+static struct rb_node *__rb_predecessor(struct rb_node *node)
 {
-    if (node->left) return __rbtree_max(node->left);
-    struct rbtree_node *p = node->parent;
+    if (node->left) return __rb_max(node->left);
+    struct rb_node *p = node->parent;
     while (p && node == p->left) {
         node = p;
         p = p->parent;
@@ -152,7 +152,7 @@ static struct rbtree_node *__rbtree_predecessor(struct rbtree_node *node)
     return p;
 }
 
-static void __rbtree_update_begin_and_end_in_insert(rbtree_t *rb, struct rbtree_node *node)
+static void __rb_update_begin_and_end_in_insert(rbtree_t *rb, struct rb_node *node)
 {
     if (!rb->begin) {
         rb->begin = rb->end = node;
@@ -164,19 +164,19 @@ static void __rbtree_update_begin_and_end_in_insert(rbtree_t *rb, struct rbtree_
         rb->end = node;
 }
 
-static void __rbtree_update_begin_and_end_in_delete(rbtree_t *rb, struct rbtree_node *node)
+static void __rb_update_begin_and_end_in_delete(rbtree_t *rb, struct rb_node *node)
 {
     if (node == rb->begin)
-        rb->begin = __rbtree_successor(node);
+        rb->begin = __rb_successor(node);
     if (node == rb->end)
-        rb->end = __rbtree_predecessor(node);
+        rb->end = __rb_predecessor(node);
 }
 
 /* 返回键值大于等于key的最小节点 */
-static struct rbtree_node *__rbtree_lower_bound(rbtree_t *rb, const void *key)
+static struct rb_node *__rb_lower_bound(rbtree_t *rb, const void *key)
 {
-    struct rbtree_node *p = rb->root;
-    struct rbtree_node *lower = NULL;
+    struct rb_node *p = rb->root;
+    struct rb_node *lower = NULL;
     while (p) {
         if (rb->rb_comp(key, p->key) > 0) {
             p = p->right;
@@ -192,10 +192,10 @@ static struct rbtree_node *__rbtree_lower_bound(rbtree_t *rb, const void *key)
 }
 
 /* 返回键值小于等于key的最大节点 */
-static struct rbtree_node *__rbtree_upper_bound(rbtree_t *rb, const void *key)
+static struct rb_node *__rb_upper_bound(rbtree_t *rb, const void *key)
 {
-    struct rbtree_node *p = rb->root;
-    struct rbtree_node *upper = NULL;
+    struct rb_node *p = rb->root;
+    struct rb_node *upper = NULL;
     while (p) {
         if (rb->rb_comp(key, p->key) < 0) {
             p = p->left;
@@ -210,35 +210,35 @@ static struct rbtree_node *__rbtree_upper_bound(rbtree_t *rb, const void *key)
     return upper;
 }
 
-size_t __rbtree_order_of_key(rbtree_t *rb, struct rbtree_node *p, const void *key)
+size_t __rb_order_of_key(rbtree_t *rb, struct rb_node *p, const void *key)
 {
     size_t order = 0;
     if (!p) return 0;
     if (p->left) order = p->left->size;
     if (rb->rb_comp(key, p->key) < 0) {
-        return __rbtree_order_of_key(rb, p->left, key);
+        return __rb_order_of_key(rb, p->left, key);
     } else if (rb->rb_comp(key, p->key) > 0) {
-        return order + __rbtree_order_of_key(rb, p->right, key) + 1;
+        return order + __rb_order_of_key(rb, p->right, key) + 1;
     } else {
         return order;
     }
 }
 
-rbtree_iterator __rbtree_find_by_order(rbtree_t *rb, struct rbtree_node *p, size_t order)
+rb_iterator __rb_find_by_order(rbtree_t *rb, struct rb_node *p, size_t order)
 {
     size_t nodes = 0;
     if (!p) return NULL;
     if (p->left) nodes = p->left->size;
     if (nodes > order) {
-        return __rbtree_find_by_order(rb, p->left, order);
+        return __rb_find_by_order(rb, p->left, order);
     } else if (nodes < order) {
-        return __rbtree_find_by_order(rb, p->right, order - nodes - 1);
+        return __rb_find_by_order(rb, p->right, order - nodes - 1);
     } else {
         return __alloc_iterator(p);
     }
 }
 
-static void __rbtree_update_subtree_size_after_rotate(struct rbtree_node *x)
+static void __rb_update_subtree_size_after_rotate(struct rb_node *x)
 {
     x->size = 1;
     if (x->left) x->size += x->left->size;
@@ -259,9 +259,9 @@ static void __rbtree_update_subtree_size_after_rotate(struct rbtree_node *x)
  *       / \       / \
  *      z   w     r   z
  */
-static void __rbtree_left_rotate(rbtree_t *rb, struct rbtree_node *x)
+static void __rb_left_rotate(rbtree_t *rb, struct rb_node *x)
 {
-    struct rbtree_node *p;
+    struct rb_node *p;
 
     p = x->right;
     x->right = p->left;
@@ -277,7 +277,7 @@ static void __rbtree_left_rotate(rbtree_t *rb, struct rbtree_node *x)
         rb->root = p;
     p->left = x;
     x->parent = p;
-    __rbtree_update_subtree_size_after_rotate(x);
+    __rb_update_subtree_size_after_rotate(x);
 }
 
 /*
@@ -287,11 +287,11 @@ static void __rbtree_left_rotate(rbtree_t *rb, struct rbtree_node *x)
  *   / \              / \
  *  z   w            w   y
  *
- *  __rbtree_right_rotate()和__rbtree_left_rotate()的代码是对称的
+ *  __rb_right_rotate()和__rb_left_rotate()的代码是对称的
  */
-static void __rbtree_right_rotate(rbtree_t *rb, struct rbtree_node *x)
+static void __rb_right_rotate(rbtree_t *rb, struct rb_node *x)
 {
-    struct rbtree_node *p;
+    struct rb_node *p;
 
     p = x->left;
     x->left = p->right;
@@ -307,7 +307,7 @@ static void __rbtree_right_rotate(rbtree_t *rb, struct rbtree_node *x)
         rb->root = p;
     p->right = x;
     x->parent = p;
-    __rbtree_update_subtree_size_after_rotate(x);
+    __rb_update_subtree_size_after_rotate(x);
 }
 
 /* A(black) a(red)
@@ -334,9 +334,9 @@ static void __rbtree_right_rotate(rbtree_t *rb, struct rbtree_node *x)
  *          /              \          \
  *         x                z          z
  */
-static void __rbtree_insert_fixup(rbtree_t *rb, struct rbtree_node *x)
+static void __rb_insert_fixup(rbtree_t *rb, struct rb_node *x)
 {
-    struct rbtree_node *p;
+    struct rb_node *p;
 
     while (x->parent && x->parent->color == RED) {
         if (x->parent == x->parent->parent->left) {
@@ -349,11 +349,11 @@ static void __rbtree_insert_fixup(rbtree_t *rb, struct rbtree_node *x)
             } else {
                 if (x == x->parent->right) {
                     x = x->parent;
-                    __rbtree_left_rotate(rb, x);
+                    __rb_left_rotate(rb, x);
                 }
                 x->parent->color = BLACK;
                 x->parent->parent->color = RED;
-                __rbtree_right_rotate(rb, x->parent->parent);
+                __rb_right_rotate(rb, x->parent->parent);
             }
         } else {   /* 和if的代码是对称的 */
             p = x->parent->parent->left;
@@ -365,31 +365,31 @@ static void __rbtree_insert_fixup(rbtree_t *rb, struct rbtree_node *x)
             } else {
                 if (x == x->parent->left) {
                     x = x->parent;
-                    __rbtree_right_rotate(rb, x);
+                    __rb_right_rotate(rb, x);
                 }
                 x->parent->color = BLACK;
                 x->parent->parent->color = RED;
-                __rbtree_left_rotate(rb, x->parent->parent);
+                __rb_left_rotate(rb, x->parent->parent);
             }
         }
     }
     rb->root->color = BLACK;
 }
 
-static void __rbtree_undo_modify_of_size(rbtree_t *rb, struct rbtree_node *x)
+static void __rb_undo_modify_of_size(rbtree_t *rb, struct rb_node *x)
 {
-    (void)__rbtree_find_in_delete(rb, x->key);
+    (void)__rb_find_in_delete(rb, x->key);
 }
 
 /*
  * 插入过程类似于bst的插入过程，只不过多了一步fixup
  */
-static void __rbtree_insert(rbtree_t *rb, struct rbtree_node *p)
+static void __rb_insert(rbtree_t *rb, struct rb_node *p)
 {
-    struct rbtree_node *root = rb->root;
-    struct rbtree_node *pre = NULL;
+    struct rb_node *root = rb->root;
+    struct rb_node *pre = NULL;
 
-    __rbtree_update_begin_and_end_in_insert(rb, p);
+    __rb_update_begin_and_end_in_insert(rb, p);
 
     while (root) {
         pre = root;
@@ -405,7 +405,7 @@ static void __rbtree_insert(rbtree_t *rb, struct rbtree_node *p)
                 rb->rb_free(p->key, NULL);
             }
             root->value = p->value;
-            __rbtree_undo_modify_of_size(rb, p);
+            __rb_undo_modify_of_size(rb, p);
             free(p);
             return;
         }
@@ -418,7 +418,7 @@ static void __rbtree_insert(rbtree_t *rb, struct rbtree_node *p)
             pre->right = p;
     } else
         rb->root = p;
-    __rbtree_insert_fixup(rb, p);
+    __rb_insert_fixup(rb, p);
     rb->size++;
 }
 
@@ -433,8 +433,8 @@ static void __rbtree_insert(rbtree_t *rb, struct rbtree_node *p)
  *               / \
  *              x   y
  */
-static void __rbtree_transplant(rbtree_t *rb,
-        struct rbtree_node *u, struct rbtree_node *v)
+static void __rb_transplant(rbtree_t *rb,
+        struct rb_node *u, struct rb_node *v)
 {
     if (!u->parent)
         rb->root = v;
@@ -446,9 +446,9 @@ static void __rbtree_transplant(rbtree_t *rb,
         v->parent = u->parent;
 }
 
-static void __rbtree_delete_fixup(rbtree_t *rb, struct rbtree_node *x)
+static void __rb_delete_fixup(rbtree_t *rb, struct rb_node *x)
 {
-    struct rbtree_node *y;
+    struct rb_node *y;
 
     while (x && x != rb->root && x->color == BLACK) {
         if (x == x->parent->left) {
@@ -457,7 +457,7 @@ static void __rbtree_delete_fixup(rbtree_t *rb, struct rbtree_node *x)
             if (y->color == RED) {
                 y->color = BLACK;
                 x->parent->color = RED;
-                __rbtree_left_rotate(rb, x->parent);
+                __rb_left_rotate(rb, x->parent);
                 y = x->parent->right;
             }
             if ((!y->left  || y->left->color == BLACK) &&
@@ -468,13 +468,13 @@ static void __rbtree_delete_fixup(rbtree_t *rb, struct rbtree_node *x)
                 if (!y->right || y->right->color == BLACK) {
                     y->left->color = BLACK;
                     y->color = RED;
-                    __rbtree_right_rotate(rb, y);
+                    __rb_right_rotate(rb, y);
                     y = x->parent->right;
                 }
                 y->color = x->parent->color;
                 x->parent->color = BLACK;
                 y->right->color = BLACK;
-                __rbtree_left_rotate(rb, x->parent);
+                __rb_left_rotate(rb, x->parent);
             }
         } else {
             if (!(y = x->parent->left))
@@ -482,7 +482,7 @@ static void __rbtree_delete_fixup(rbtree_t *rb, struct rbtree_node *x)
             if (y->color == RED) {
                 y->color = BLACK;
                 x->parent->color = RED;
-                __rbtree_right_rotate(rb, x->parent);
+                __rb_right_rotate(rb, x->parent);
                 y = x->parent->left;
             }
             if ((!y->left  || y->left->color == BLACK) &&
@@ -493,13 +493,13 @@ static void __rbtree_delete_fixup(rbtree_t *rb, struct rbtree_node *x)
                 if (!y->left || y->left->color == BLACK) {
                     y->right->color = BLACK;
                     y->color = RED;
-                    __rbtree_left_rotate(rb, y);
+                    __rb_left_rotate(rb, y);
                     y = x->parent->left;
                 }
                 y->color = x->parent->color;
                 x->parent->color = BLACK;
                 y->left->color = BLACK;
-                __rbtree_right_rotate(rb, x->parent);
+                __rb_right_rotate(rb, x->parent);
             }
         }
     }
@@ -526,39 +526,39 @@ static void __rbtree_delete_fixup(rbtree_t *rb, struct rbtree_node *x)
  *                        \
  *                         t
  */
-static void __rbtree_delete(rbtree_t *rb, struct rbtree_node *p)
+static void __rb_delete(rbtree_t *rb, struct rb_node *p)
 {
-    struct rbtree_node *x, *y;
+    struct rb_node *x, *y;
     unsigned char origin_color = p->color;
 
-    __rbtree_update_begin_and_end_in_delete(rb, p);
+    __rb_update_begin_and_end_in_delete(rb, p);
 
     if (!p->left) {
         x = p->right;
-        __rbtree_transplant(rb, p, p->right);
+        __rb_transplant(rb, p, p->right);
     } else if (!p->right) {
         x = p->left;
-        __rbtree_transplant(rb, p, p->left);
+        __rb_transplant(rb, p, p->left);
     } else {
-        y = __rbtree_min(p->right);
+        y = __rb_min(p->right);
         origin_color = y->color;
         x = y->right;
         if (y->parent != p) {
-            __rbtree_transplant(rb, y, y->right);
+            __rb_transplant(rb, y, y->right);
             y->right = p->right;
             y->right->parent = y;
         }
-        __rbtree_transplant(rb, p, y);
+        __rb_transplant(rb, p, y);
         y->left = p->left;
         y->left->parent = y;
         y->color = p->color;
     }
     if (origin_color == BLACK)
-        __rbtree_delete_fixup(rb, x);
+        __rb_delete_fixup(rb, x);
     __free_node(rb, p);
 }
 
-rbtree_t *rbtree_init(__rbtree_comp_handler rcomp, __rbtree_free_handler rfree)
+rbtree_t *rb_init(__rbtree_comp_handler rcomp, __rbtree_free_handler rfree)
 {
     rbtree_t *rb = Calloc(1, sizeof(rbtree_t));
     rb->rb_comp = rcomp;
@@ -566,113 +566,113 @@ rbtree_t *rbtree_init(__rbtree_comp_handler rcomp, __rbtree_free_handler rfree)
     return rb;
 }
 
-rbtree_iterator rbtree_begin(rbtree_t *rb)
+rb_iterator rb_begin(rbtree_t *rb)
 {
     __check_rbtree(rb);
     return rb->begin ? __alloc_iterator(rb->begin) : NULL;
 }
 
-rbtree_iterator rbtree_end(rbtree_t *rb)
+rb_iterator rb_end(rbtree_t *rb)
 {
     __check_rbtree(rb);
     return rb->end ? __alloc_iterator(rb->end) : NULL;
 }
 
-bool rbtree_next(rbtree_iterator iter)
+bool rb_next(rb_iterator iter)
 {
     if (!iter->node) return false;
-    iter->node = __rbtree_successor(iter->node);
+    iter->node = __rb_successor(iter->node);
     return iter->node != NULL;
 }
 
-bool rbtree_prev(rbtree_iterator iter)
+bool rb_prev(rb_iterator iter)
 {
     if (!iter->node) return false;
-    iter->node = __rbtree_predecessor(iter->node);
+    iter->node = __rb_predecessor(iter->node);
     return iter->node != NULL;
 }
 
-void rbtree_free_iterator(rbtree_iterator iter)
+void rb_free_iterator(rb_iterator iter)
 {
     free(iter);
 }
 
-void *rbtree_get_key(rbtree_iterator iter)
+void *rb_get_key(rb_iterator iter)
 {
     return iter->node->key;
 }
 
-void *rbtree_get_value(rbtree_iterator iter)
+void *rb_get_value(rb_iterator iter)
 {
     return iter->node->value;
 }
 
-rbtree_iterator rbtree_find(rbtree_t *rb, const void *key)
+rb_iterator rb_find(rbtree_t *rb, const void *key)
 {
     __check_rbtree(rb);
-    struct rbtree_node *node = __rbtree_find(rb, rb->root, key);
+    struct rb_node *node = __rb_find(rb, rb->root, key);
     return node ? __alloc_iterator(node) : NULL;
 }
 
-size_t rbtree_order_of_key(rbtree_t *rb, const void *key)
+size_t rb_order_of_key(rbtree_t *rb, const void *key)
 {
     __check_rbtree(rb);
-    return __rbtree_order_of_key(rb, rb->root, key);
+    return __rb_order_of_key(rb, rb->root, key);
 }
 
-rbtree_iterator rbtree_find_by_order(rbtree_t *rb, size_t order)
+rb_iterator rb_find_by_order(rbtree_t *rb, size_t order)
 {
     __check_rbtree(rb);
-    return __rbtree_find_by_order(rb, rb->root, order);
+    return __rb_find_by_order(rb, rb->root, order);
 }
 
-void rbtree_insert(rbtree_t *rb, void *key, void *value)
+void rb_insert(rbtree_t *rb, void *key, void *value)
 {
     __check_rbtree(rb);
-    __rbtree_insert(rb, __alloc_node(key, value));
+    __rb_insert(rb, __alloc_node(key, value));
 }
 
-void rbtree_erase(rbtree_t *rb, const void *key)
+void rb_erase(rbtree_t *rb, const void *key)
 {
-    struct rbtree_node *p = __rbtree_find_in_delete(rb, key);
-    if (p) __rbtree_delete(rb, p);
+    struct rb_node *p = __rb_find_in_delete(rb, key);
+    if (p) __rb_delete(rb, p);
 }
 
-bool rbtree_empty(rbtree_t *rb)
+bool rb_empty(rbtree_t *rb)
 {
     __check_rbtree(rb);
     return rb->size == 0;
 }
 
-size_t rbtree_size(rbtree_t *rb)
+size_t rb_size(rbtree_t *rb)
 {
     __check_rbtree(rb);
     return rb->size;
 }
 
-rbtree_iterator rbtree_lower_bound(rbtree_t *rb, const void *key)
+rb_iterator rb_lower_bound(rbtree_t *rb, const void *key)
 {
     __check_rbtree(rb);
-    struct rbtree_node *node = __rbtree_lower_bound(rb, key);
+    struct rb_node *node = __rb_lower_bound(rb, key);
     return node ? __alloc_iterator(node) : NULL;
 }
 
-rbtree_iterator rbtree_upper_bound(rbtree_t *rb, const void *key)
+rb_iterator rb_upper_bound(rbtree_t *rb, const void *key)
 {
     __check_rbtree(rb);
-    struct rbtree_node *node = __rbtree_upper_bound(rb, key);
+    struct rb_node *node = __rb_upper_bound(rb, key);
     return node ? __alloc_iterator(node) : NULL;
 }
 
-void rbtree_clear(rbtree_t *rb)
+void rb_clear(rbtree_t *rb)
 {
     __check_rbtree(rb);
     while (rb->root)
-        __rbtree_delete(rb, rb->root);
+        __rb_delete(rb, rb->root);
 }
 
-void rbtree_free(rbtree_t *rb)
+void rb_free(rbtree_t *rb)
 {
-    rbtree_clear(rb);
+    rb_clear(rb);
     free(rb);
 }
