@@ -30,16 +30,16 @@ struct rb_node {
     unsigned char color;
 };
 
-typedef int (*__rbtree_comp_handler)(const void *, const void *);
-typedef void (*__rbtree_free_handler)(void *, void *);
+typedef int (*__rb_comp_handler)(const void *, const void *);
+typedef void (*__rb_free_handler)(void *, void *);
 
 typedef struct __rbtree {
     size_t size;
     struct rb_node *root;
     struct rb_node *begin;
     struct rb_node *end;
-    __rbtree_comp_handler rb_comp;
-    __rbtree_free_handler rb_free;
+    __rb_comp_handler rb_comp;
+    __rb_free_handler rb_free;
 } rbtree_t;
 
 struct __rb_iterator {
@@ -48,7 +48,7 @@ struct __rb_iterator {
 
 typedef struct __rb_iterator * rb_iterator;
 
-#define __check_rbtree(rb) (assert(rb))
+#define __check_rb(rb) (assert(rb))
 
 static struct rb_node *__alloc_node(void *key, void *value)
 {
@@ -558,7 +558,7 @@ static void __rb_delete(rbtree_t *rb, struct rb_node *p)
     __free_node(rb, p);
 }
 
-rbtree_t *rb_init(__rbtree_comp_handler rcomp, __rbtree_free_handler rfree)
+rbtree_t *rb_init(__rb_comp_handler rcomp, __rb_free_handler rfree)
 {
     rbtree_t *rb = Calloc(1, sizeof(rbtree_t));
     rb->rb_comp = rcomp;
@@ -568,13 +568,13 @@ rbtree_t *rb_init(__rbtree_comp_handler rcomp, __rbtree_free_handler rfree)
 
 rb_iterator rb_begin(rbtree_t *rb)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     return rb->begin ? __alloc_iterator(rb->begin) : NULL;
 }
 
 rb_iterator rb_end(rbtree_t *rb)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     return rb->end ? __alloc_iterator(rb->end) : NULL;
 }
 
@@ -609,26 +609,26 @@ void *rb_get_value(rb_iterator iter)
 
 rb_iterator rb_find(rbtree_t *rb, const void *key)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     struct rb_node *node = __rb_find(rb, rb->root, key);
     return node ? __alloc_iterator(node) : NULL;
 }
 
 size_t rb_order_of_key(rbtree_t *rb, const void *key)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     return __rb_order_of_key(rb, rb->root, key);
 }
 
 rb_iterator rb_find_by_order(rbtree_t *rb, size_t order)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     return __rb_find_by_order(rb, rb->root, order);
 }
 
 void rb_insert(rbtree_t *rb, void *key, void *value)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     __rb_insert(rb, __alloc_node(key, value));
 }
 
@@ -640,33 +640,33 @@ void rb_erase(rbtree_t *rb, const void *key)
 
 bool rb_empty(rbtree_t *rb)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     return rb->size == 0;
 }
 
 size_t rb_size(rbtree_t *rb)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     return rb->size;
 }
 
 rb_iterator rb_lower_bound(rbtree_t *rb, const void *key)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     struct rb_node *node = __rb_lower_bound(rb, key);
     return node ? __alloc_iterator(node) : NULL;
 }
 
 rb_iterator rb_upper_bound(rbtree_t *rb, const void *key)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     struct rb_node *node = __rb_upper_bound(rb, key);
     return node ? __alloc_iterator(node) : NULL;
 }
 
 void rb_clear(rbtree_t *rb)
 {
-    __check_rbtree(rb);
+    __check_rb(rb);
     while (rb->root)
         __rb_delete(rb, rb->root);
 }

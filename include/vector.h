@@ -11,20 +11,14 @@ typedef void (*__vector_free_handler)(void *);
 
 /* 初始化一个vector，存储的是数据副本 */
 vector_t *vector_init(size_t typesize);
-/* 初始化一个vector，存储的是指向数据的指针
- * 如果以此函数初始化，则需要在访问元素时使用_p后缀的函数 */
-vector_t *vector_init_p(void);
 /* 设置释放函数 */
 void vector_set_free_handler(vector_t *v, __vector_free_handler vfree);
 /* return vector[index]，不进行越界检查 */
 void *vector_entry(vector_t *vector, size_t index);
-void *vector_entry_p(vector_t *v, size_t index);
 /* 访问第一个元素 */
 void *vector_front(vector_t *v);
-void *vector_front_p(vector_t *v);
 /* 访问最后一个元素 */
 void *vector_back(vector_t *v);
-void *vector_back_p(vector_t *v);
 /* 返回指向第一个元素的迭代器 */
 vector_iterator vector_begin(vector_t *v);
 /* 返回指向最后一个元素的迭代器 */
@@ -35,7 +29,6 @@ bool vector_next(vector_iterator iter);
 bool vector_prev(vector_iterator iter);
 /* 取出迭代器中的数据 */
 void *vector_get(vector_iterator iter);
-void *vector_get_p(vector_iterator iter);
 /* 释放一个迭代器 */
 void vector_free_iterator(vector_iterator iter);
 /* 判断vector是否为空 */
@@ -56,7 +49,10 @@ void vector_insert(vector_t *v, vector_iterator pos, const void *data);
 void vector_insert1(vector_t *v, vector_iterator pos, const void *data, size_t count);
 /* 删除pos处的元素 */
 void vector_erase(vector_t *v, vector_iterator pos);
-/* 在vector末尾添加一个元素 */
+/* 在vector末尾添加一个元素
+ * 假如要添加元素e，则需要vector_push_back(v, &e)(这里&必不可少)
+ * 不管e是一个值还是一个指针，都需如此
+ */
 void vector_push_back(vector_t *vector, const void *data);
 /* 从vector末尾弹出一个元素 */
 void vector_pop_back(vector_t *v);

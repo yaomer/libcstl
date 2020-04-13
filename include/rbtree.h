@@ -7,12 +7,12 @@
 typedef struct __rbtree rbtree_t;
 typedef struct __rb_iterator * rb_iterator;
 /* 用于比较树节点 */
-typedef int (*__rbtree_comp_handler)(const void *, const void *);
+typedef int (*__rb_comp_handler)(const void *, const void *);
 /* 用于释放存储的键和值 */
-typedef void (*__rbtree_free_handler)(void *, void *);
+typedef void (*__rb_free_handler)(void *, void *);
 
 /* 初始化一个红黑树 */
-rbtree_t *rb_init(__rbtree_comp_handler rcomp, __rbtree_free_handler rfree);
+rbtree_t *rb_init(__rb_comp_handler rcomp, __rb_free_handler rfree);
 /* 返回指向最小节点的迭代器 */
 rb_iterator rb_begin(rbtree_t *rb);
 /* 返回指向最大节点的迭代器 */

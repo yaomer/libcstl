@@ -11,7 +11,6 @@ typedef struct __vector {
     size_t alloc_size;  /* 已分配的内存大小 */
     size_t typesize;  /* 存储的类型大小 */
     __vector_free_handler vector_free;
-    bool pointer;
 } vector_t;
 
 typedef struct __vector_iterator {
@@ -23,8 +22,6 @@ typedef struct __vector_iterator {
 #define VECTOR_INCR_FACTOR 2
 
 #define __check_vector(v) (assert(v))
-
-#define __get_pointer(x) (*(void**)(x))
 
 static size_t __vector_offset(vector_t *v, size_t n)
 {
@@ -46,7 +43,7 @@ static void __vector_free(vector_t *v, size_t start)
 {
     if (!v->vector_free) return;
     for (size_t i = start; i < v->size; i++) {
-        void *ptr = __get_pointer(__vector_off_ptr(v, i));
+        void *ptr = *(void**)(__vector_off_ptr(v, i));
         if (ptr) v->vector_free(ptr);
     }
 }
@@ -72,11 +69,7 @@ static void __vector_insert(vector_t *v, size_t pos, const void *data, size_t co
     if (pos < v->size) {
         memmove(ptr + offset, ptr, __vector_offset(v, v->size - pos));
     }
-    if (v->pointer) {
-        memcpy(ptr, &data, offset);
-    } else {
-        memcpy(ptr, data, offset);
-    }
+    memcpy(ptr, data, offset);
     v->size += count;
 }
 
@@ -99,13 +92,6 @@ vector_t *vector_init(size_t typesize)
     return v;
 }
 
-vector_t *vector_init_p(void)
-{
-    vector_t *v = vector_init(sizeof(void*));
-    v->pointer = true;
-    return v;
-}
-
 void vector_set_free_handler(vector_t *v, __vector_free_handler vfree)
 {
     __check_vector(v);
@@ -118,30 +104,15 @@ void *vector_entry(vector_t *v, size_t index)
     return __vector_off_ptr(v, index);
 }
 
-void *vector_entry_p(vector_t *v, size_t index)
-{
-    return __get_pointer(vector_entry(v, index));
-}
-
 void *vector_front(vector_t *v)
 {
     return vector_entry(v, 0);
-}
-
-void *vector_front_p(vector_t *v)
-{
-    return vector_entry_p(v, 0);
 }
 
 void *vector_back(vector_t *v)
 {
     __check_vector(v);
     return v->size > 0 ? vector_entry(v, v->size - 1) : NULL;
-}
-
-void *vector_back_p(vector_t *v)
-{
-    return __get_pointer(vector_back(v));
 }
 
 vector_iterator vector_begin(vector_t *v)
@@ -174,11 +145,6 @@ bool vector_prev(vector_iterator iter)
 void *vector_get(vector_iterator iter)
 {
     return __vector_off_ptr(iter->vector, iter->index);
-}
-
-void *vector_get_p(vector_iterator iter)
-{
-    return __get_pointer(vector_get(iter));
 }
 
 void vector_free_iterator(vector_iterator iter)
@@ -277,6 +243,7 @@ void vector_clear(vector_t *v)
 void vector_swap(vector_t *v, size_t i, size_t j)
 {
     __check_vector(v);
+    if (i == j) return;
     char buf[v->typesize];
     void *vi = __vector_off_ptr(v, i);
     void *vj = __vector_off_ptr(v, j);
