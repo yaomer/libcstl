@@ -48,4 +48,5 @@ int main(void)
         if (!rb_next(iter)) break;
     }
     printf("\n");
+    rb_free(r);
 }

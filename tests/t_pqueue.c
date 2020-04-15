@@ -63,4 +63,5 @@ int main(void)
         pq_pop(pq);
     }
     printf("\n");
+    pq_free(pq);
 }
