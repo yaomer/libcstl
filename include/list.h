@@ -13,9 +13,7 @@ typedef int (*__list_comp_handler)(const void *, const void *);
 typedef void (*__list_free_handler)(void *);
 
 /* 初始化一个list */
-list_t *list_init(__list_comp_handler comp);
-/* 设置list释放数据时调用的函数 */
-void list_set_free_handler(list_t *list, __list_free_handler lfree);
+list_t *list_init(__list_comp_handler lcomp, __list_free_handler lfree);
 /* 释放一个list */
 void list_free(list_t *list);
 

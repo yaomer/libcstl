@@ -151,17 +151,12 @@ static void __list_erase(list_t *list, struct list_node *node)
     __list_free_node(list, node);
 }
 
-list_t *list_init(__list_comp_handler comp)
+list_t *list_init(__list_comp_handler lcomp, __list_free_handler lfree)
 {
     list_t *list = Calloc(1, sizeof(list_t));
-    list->list_comp = comp;
-    return list;
-}
-
-void list_set_free_handler(list_t *list, __list_free_handler lfree)
-{
-    __check_list(list);
+    list->list_comp = lcomp;
     list->list_free = lfree;
+    return list;
 }
 
 bool list_empty(list_t *list)
@@ -246,10 +241,11 @@ void list_pop_back(list_t *list)
     __list_pop_back(list);
 }
 
-void list_insert_before(list_t *list, struct list_node *pos, void *data)
+void list_insert_before(list_t *list, list_iterator pos, void *data)
 {
     __check_list(list);
-    if (pos) __list_insert_before(list, pos, __alloc_node(data));
+    if (!pos || !pos->node) return;
+    __list_insert_before(list, pos->node, __alloc_node(data));
 }
 
 list_iterator list_find(list_t *list, const void *data)
@@ -276,7 +272,7 @@ list_t *list_merge(list_t *list1, list_t *list2)
 {
     __check_list(list1);
     __check_list(list2);
-    list_t *list = list_init(list1->list_comp);
+    list_t *list = list_init(list1->list_comp, list1->list_free);
     struct list_node *iter1 = list1->front;
     struct list_node *iter2 = list2->front;
     struct list_node *_iter1 = iter1, *_iter2 = iter2;
